@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Word Review - Matching Exercise</title>
+    <link rel="stylesheet" href="style/global.css">
+    <link rel="stylesheet" href="style/word_review.css">
+</head>
+<body>
+    <div class="review-container">
+        <div class="review-header">
+            <h1>Word Matching Exercise</h1>
+            <p>Drag words from the left column to match them with their translations on the right</p>
+        </div>
+
+        <div class="review-stats">
+            <div class="stat-card">
+                <div class="stat-number" id="totalWords">0</div>
+                <div class="stat-label">Total Words</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="wordsReviewing">0</div>
+                <div class="stat-label">Reviewing</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="correctMatches">0</div>
+                <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="accuracy">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+        </div>
+
+        <div class="control-buttons">
+            <button class="btn btn-secondary" id="addNewWordBtn" onclick="window.location.href='text_loader.html'">Add paragraph</button>
+            <button class="btn btn-success" id="checkAnswersBtn" style="display: none;">Check Answers</button>
+            <button class="btn btn-secondary" id="resetBtn" style="display: none;">Reset</button>
+            <button class="btn btn-primary" id="finishReviewBtn" style="display: none;">Finish Review</button>
+        </div>
+
+        <div id="resultMessage" class="result-message" style="display: none;"></div>
+
+        <div id="loadingMessage" class="loading" style="display: none;">
+            Loading words for review...
+        </div>
+
+        <div class="matching-area" id="matchingArea" style="display: none;">
+            <div class="words-column">
+                <div class="column-header">Swedish Words</div>
+                <div id="wordsContainer"></div>
+            </div>
+            
+            <div class="translations-column">
+                <div class="column-header">English Translations</div>
+                <div id="translationsContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/indexdb.js"></script>
+    <script src="js/word_db.js"></script>
+    <script src="js/word_review_page.js"></script>
+</body>
+</html>

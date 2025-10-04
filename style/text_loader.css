@@ -1,0 +1,292 @@
+.content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+#textInput {
+    width: 100%;
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    resize: none;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+#textInput:focus {
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+}
+
+#textDisplay {
+    max-height: calc(-160px + 100vh);
+    width: 100%;
+    flex: 1;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 24px;
+    line-height: 1.8;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: none;
+    overflow-y: auto;
+}
+
+.word {
+    display: inline;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin: 1px;
+}
+
+.word:hover {
+    background: rgba(102, 126, 234, 0.2);
+}
+
+.word.selected {
+    background: #667eea;
+    color: white;
+    font-weight: bold;
+}
+
+.button-container {
+    display: flex;
+    align-self: flex-end;
+    gap: 15px;
+    margin-top: auto;
+}
+
+button {
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#clearBtn {
+    background: #ff6b6b;
+    color: white;
+}
+
+#clearBtn:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+}
+
+#nextBtn {
+    background: #4ecdc4;
+    color: white;
+}
+
+#nextBtn:hover:not(:disabled) {
+    background: #26d0ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+}
+
+button:disabled {
+    background: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed !important;
+    transform: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.status-message {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+    display: none;
+}
+
+.success {
+    background: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.info {
+    background: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+
+    #textInput, #textDisplay {
+        font-size: 20px;
+    }
+
+    button {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    .button-container {
+        gap: 10px;
+    }
+}
+
+/* Loading animation */
+.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: "";
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Workspace Modal Styles */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+}
+
+.modal-content {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+#workspaceTextarea {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.5;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    resize: none;
+    outline: none;
+    margin-bottom: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+#workspaceClearBtn {
+    background: #ff6b6b;
+    color: white;
+}
+
+#workspaceClearBtn:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
+}
+
+#moveChunkBtn {
+    background: #4ecdc4;
+    color: white;
+}
+
+#moveChunkBtn:hover {
+    background: #26d0ce;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
+}
+
+#workspaceBtn {
+    background: #9b59b6;
+    color: white;
+}
+
+#workspaceBtn:hover {
+    background: #8e44ad;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.3);
+}
