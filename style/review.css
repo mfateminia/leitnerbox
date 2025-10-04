@@ -1,16 +1,17 @@
 .header {
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     color: white;
+    flex-shrink: 0;
 }
 
 .header h1 {
-    font-size: 24px;
+    font-size: 20px;
     margin-bottom: 5px;
 }
 
 .header .stats {
-    font-size: 14px;
+    font-size: 12px;
     opacity: 0.8;
 }
 
@@ -18,18 +19,19 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    min-height: 0;
 }
 
 #paragraphDisplay {
-    max-height: calc(100vh - 250px);
     width: 100%;
     flex: 1;
-    padding: 20px;
-    border-radius: 12px;
-    font-size: 24px;
-    line-height: 1.8;
-    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 18px;
+    line-height: 1.6;
+    background: rgba(239, 237, 237, 0.95);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
     overflow-x: hidden;
@@ -38,6 +40,7 @@
     word-wrap: break-word;
     word-break: break-word;
     white-space: normal;
+    min-height: 0;
 }
 
 .word {
@@ -67,20 +70,25 @@
 
 .button-container {
     display: flex;
-    gap: 15px;
-    margin-top: auto;
+    gap: 10px;
+    flex-shrink: 0;
+    margin-top: 10px;
 }
 
 button {
     flex: 1;
-    padding: 15px;
+    padding: 12px;
     border: none;
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #revealBtn {
@@ -148,15 +156,17 @@ button:disabled {
 }
 
 .status-message {
-    height: 40px;
-    padding: 10px;
-    border-radius: 8px;
+    padding: 8px;
+    border-radius: 6px;
     text-align: center;
     font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
+    display: none;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    z-index: 100;
+    font-size: 14px;
     transition: opacity 0.3s ease;
 }
 
@@ -216,30 +226,70 @@ button:disabled {
     to { transform: rotate(360deg); }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .container {
-        padding: 15px;
+        padding: 8px;
+    }
+
+    .header h1 {
+        font-size: 18px;
+    }
+
+    .header .stats {
+        font-size: 11px;
     }
 
     #paragraphDisplay {
-        padding: 15px;
+        padding: 12px;
+        border-radius: 6px;
     }
 
     button {
-        padding: 12px;
-        font-size: 14px;
+        padding: 10px;
+        font-size: 13px;
     }
 
     .button-container {
-        gap: 10px;
+        gap: 8px;
     }
 
     .completion-message {
-        font-size: 20px;
+        font-size: 18px;
     }
 
     .completion-message .emoji {
-        font-size: 36px;
+        font-size: 32px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+
+    .header h1 {
+        font-size: 16px;
+    }
+
+    #paragraphDisplay {
+        padding: 10px;
+    }
+
+    button {
+        padding: 8px;
+        font-size: 12px;
+    }
+
+    .button-container {
+        gap: 6px;
+    }
+
+    .completion-message {
+        font-size: 16px;
+    }
+
+    .completion-message .emoji {
+        font-size: 28px;
     }
 }
 
@@ -262,13 +312,10 @@ button:disabled {
 }
 
 .translation-text {
-    font-size: 22px;
+    font-size: 18px;
     color: #2d5a87;
     margin-bottom: 20px;
     padding: 15px;
-    background: rgba(45, 90, 135, 0.1);
-    border-radius: 8px;
-    border-left: 4px solid #2d5a87;
 }
 
 .translation-words {
@@ -278,7 +325,7 @@ button:disabled {
 .translation-words h3 {
     color: #2d5a87;
     margin-bottom: 10px;
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .word-explanation {

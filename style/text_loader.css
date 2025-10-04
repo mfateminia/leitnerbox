@@ -2,22 +2,25 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    min-height: 0;
 }
 
 #textInput {
     width: 100%;
     flex: 1;
-    padding: 15px;
+    padding: 10px;
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 16px;
-    line-height: 1.5;
-    background: rgba(255, 255, 255, 0.95);
+    line-height: 1.4;
+    background: rgba(239, 237, 237, 0.95);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     resize: none;
     outline: none;
     transition: all 0.3s ease;
+    min-height: 0;
 }
 
 #textInput:focus {
@@ -26,17 +29,19 @@
 }
 
 #textDisplay {
-    max-height: calc(-160px + 100vh);
     width: 100%;
     flex: 1;
-    padding: 15px;
-    border-radius: 12px;
-    font-size: 24px;
-    line-height: 1.8;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 18px;
+    line-height: 1.6;
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     display: none;
     overflow-y: auto;
+    min-height: 0;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .word {
@@ -60,20 +65,25 @@
 
 .button-container {
     display: flex;
-    align-self: flex-end;
-    gap: 15px;
-    margin-top: auto;
+    gap: 10px;
+    margin-top: 10px;
+    flex-shrink: 0;
 }
 
 button {
-    padding: 15px;
+    padding: 12px 16px;
     border: none;
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #clearBtn {
@@ -107,12 +117,18 @@ button:disabled {
 }
 
 .status-message {
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 8px;
+    padding: 8px;
+    margin: 8px 0;
+    border-radius: 6px;
     text-align: center;
     font-weight: 500;
     display: none;
+    position: absolute;
+    bottom: 70px;
+    left: 10px;
+    right: 10px;
+    z-index: 100;
+    font-size: 14px;
 }
 
 .success {
@@ -133,22 +149,48 @@ button:disabled {
     border: 1px solid #bee5eb;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     .container {
-        padding: 15px;
+        padding: 8px;
     }
 
     #textInput, #textDisplay {
-        font-size: 20px;
+        font-size: 16px;
+        padding: 8px;
+        border-radius: 6px;
     }
 
     button {
-        padding: 12px;
-        font-size: 14px;
+        padding: 10px 12px;
+        font-size: 13px;
     }
 
     .button-container {
-        gap: 10px;
+        gap: 8px;
+    }
+
+    .content-area {
+        margin-bottom: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 5px;
+    }
+
+    #textInput, #textDisplay {
+        font-size: 14px;
+        padding: 6px;
+    }
+
+    button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .button-container {
+        gap: 6px;
     }
 }
 
@@ -181,7 +223,8 @@ button:disabled {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
+    height: 100vh;
+    height: 100dvh;
     background: rgba(0, 0, 0, 0.8);
     z-index: 1000;
 }
@@ -192,19 +235,21 @@ button:disabled {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     flex-direction: column;
-    padding: 20px;
+    padding: 10px;
+    overflow: hidden;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    flex-shrink: 0;
 }
 
 .modal-title {
     color: white;
-    font-size: 24px;
+    font-size: 18px;
     font-weight: 600;
 }
 
@@ -212,15 +257,16 @@ button:disabled {
     background: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;
-    font-size: 24px;
-    width: 40px;
-    height: 40px;
+    font-size: 20px;
+    width: 35px;
+    height: 35px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: background 0.3s ease;
+    flex: none;
 }
 
 .close-btn:hover {
@@ -229,29 +275,31 @@ button:disabled {
 
 #workspaceTextarea {
     flex: 1;
-    padding: 15px;
+    padding: 10px;
     border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    line-height: 1.5;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.4;
     background: rgba(255, 255, 255, 0.95);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     resize: none;
     outline: none;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
+    min-height: 0;
 }
 
 .modal-buttons {
     display: flex;
-    gap: 15px;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .modal-buttons button {
     flex: 1;
-    padding: 15px;
+    padding: 12px;
     border: none;
-    border-radius: 12px;
-    font-size: 16px;
+    border-radius: 8px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
