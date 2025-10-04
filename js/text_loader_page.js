@@ -19,7 +19,7 @@ class ParagraphLearningApp {
         this.currentMode = 'input'; // 'input' or 'selection'
 
         this.paragraphsDB = new ParagraphsDB();
-        this.geminiAI = new GeminiAI();
+        this.geminiAI = new GeminiAI(this.getGeminiKey());
         this.initializeEvents();
         this.loadWorkspaceFromStorage();
     }
@@ -50,6 +50,17 @@ class ParagraphLearningApp {
 
         // Initial button state check
         this.updateNextButtonState();
+    }
+
+    getGeminiKey() {
+        const key = localStorage.getItem('gemini_api_key');
+        if (!key) {
+            let userInput = prompt("Get your Gemini API key from https://aistudio.google.com/api-keys");
+            if (userInput !== null) {
+                localStorage.setItem('gemini_api_key', userInput);
+            }
+        }
+        return key;
     }
 
     // Workspace modal methods

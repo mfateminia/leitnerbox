@@ -1,18 +1,11 @@
 class GeminiAI {
-    constructor() {
+    constructor(apiKey) {
+        this.apiKey = apiKey
         this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
     }
 
     async generateContent(userPrompt) {
-        const key = localStorage.getItem('gemini_api_key');
-        if (!key) {
-            let userInput = prompt("Please set your Gemini API key in the settings.");
-            if (userInput !== null) {
-                localStorage.setItem('gemini_api_key', userInput);
-            }
-        }
-
-        const url = `${this.baseUrl}?key=${key}`;
+        const url = `${this.baseUrl}?key=${this.apiKey}`;
         
         const body = {
             contents: [
