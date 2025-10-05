@@ -1,0 +1,340 @@
+/* Settings page specific styles */
+
+/* Override global body styles to allow scrolling */
+body {
+    overflow-y: auto !important;
+    position: static !important;
+    height: auto !important;
+}
+
+.container {
+    min-height: 100vh;
+    height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    padding-bottom: 20px; /* Extra space at bottom */
+}
+
+.content-area {
+    overflow: visible !important;
+    min-height: auto !important;
+    height: auto !important;
+    flex: none;
+    margin-bottom: 20px;
+}
+
+.settings-section {
+    background: var(--color-white-transparent);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    color: var(--color-text);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--color-primary);
+}
+
+.setting-item {
+    margin-bottom: 20px;
+}
+
+.setting-item:last-child {
+    margin-bottom: 0;
+}
+
+.setting-item h3 {
+    color: var(--color-text);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.setting-item label {
+    display: block;
+    color: var(--color-text);
+    font-weight: 500;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.input-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.input-group .text-input {
+    flex: 1;
+}
+
+.toggle-btn {
+    padding: 8px 12px;
+    min-width: auto;
+    flex: none;
+    font-size: 16px;
+}
+
+.setting-description {
+    color: var(--color-disabled-text);
+    font-size: 12px;
+    margin-top: 8px;
+    line-height: 1.4;
+}
+
+.setting-description a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.setting-description a:hover {
+    text-decoration: underline;
+}
+
+/* Statistics Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.stat-card {
+    background: var(--color-surface);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--color-primary);
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: var(--color-disabled-text);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+/* Button Groups */
+.backup-buttons, .danger-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+
+.backup-buttons button, .danger-buttons button {
+    flex: 1;
+    min-width: 140px;
+}
+
+/* Danger Zone */
+.danger-zone {
+    border: 2px solid var(--color-secondary);
+    border-radius: 8px;
+    padding: 15px;
+    background: rgba(255, 107, 107, 0.05);
+}
+
+.danger-zone h3 {
+    color: var(--color-secondary);
+}
+
+/* App Information */
+.app-info p {
+    margin-bottom: 8px;
+    color: var(--color-text);
+    font-size: 14px;
+}
+
+.app-info strong {
+    color: var(--color-primary);
+}
+
+/* Modal overlay fixes for scrollable page */
+.modal-overlay {
+    position: fixed !important;
+    z-index: 1000 !important;
+}
+
+/* Confirmation Modal */
+.confirmation-modal {
+    width: 90%;
+    max-width: 400px;
+    height: auto;
+    background: var(--color-white);
+    border-radius: 12px;
+    margin: auto;
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.confirmation-modal .modal-header {
+    background: var(--color-surface);
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 0;
+}
+
+.confirmation-modal .modal-title {
+    color: var(--color-text);
+    font-size: 18px;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-body p {
+    color: var(--color-text);
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.confirmation-modal .modal-buttons {
+    padding: 20px;
+    border-radius: 0 0 12px 12px;
+    background: var(--color-surface);
+}
+
+/* Loading states */
+.loading-stats {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading-stats::after {
+    content: "Loading...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-disabled-text);
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    body {
+        position: static !important;
+        height: auto !important;
+    }
+    
+    .container {
+        min-height: 100vh;
+        padding-bottom: 30px;
+    }
+    
+    .settings-section {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .stat-card {
+        padding: 12px;
+    }
+
+    .stat-number {
+        font-size: 20px;
+    }
+
+    .backup-buttons, .danger-buttons {
+        flex-direction: column;
+    }
+
+    .backup-buttons button, .danger-buttons button {
+        min-width: auto;
+    }
+
+    .input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toggle-btn {
+        align-self: flex-end;
+        max-width: 80px;
+    }
+
+    .confirmation-modal {
+        width: 95%;
+        margin: 10px;
+    }
+
+    .modal-body {
+        padding: 15px;
+    }
+
+    .confirmation-modal .modal-header,
+    .confirmation-modal .modal-buttons {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .setting-item h3 {
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 15px;
+    }
+
+    .stat-number {
+        font-size: 18px;
+    }
+
+    .stat-label {
+        font-size: 10px;
+    }
+}
+
+/* Status message positioning for settings page */
+.status-message {
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    right: 20px !important;
+    z-index: 1001 !important;
+    max-width: calc(100% - 40px);
+    margin: 0 auto;
+}
+
+/* Animation for stats update */
+@keyframes statUpdate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.stat-number.updated {
+    animation: statUpdate 0.3s ease-in-out;
+}

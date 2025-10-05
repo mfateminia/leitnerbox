@@ -10,16 +10,17 @@
 <body>
     <div class="container">
         <div class="content-area">
-            <textarea id="textInput" placeholder="Enter your paragraph here..."></textarea>
-            <div id="textDisplay"></div>
+            <textarea id="textInput" class="text-input" placeholder="Enter your paragraph here..."></textarea>
+            <div id="textDisplay" class="text-display"></div>
             <div id="statusMessage" class="status-message"></div>
         </div>
         
         <div class="button-container">
-            <button id="newParagraph" onclick="window.location.href='word_review.html'">Review</button>
-            <button id="clearBtn">Clear</button>
-            <button id="workspaceBtn">Workspace</button>
-            <button id="nextBtn">Next</button>
+            <button id="settingsBtn" class="btn-secondary" onclick="window.location.href='settings.html'" title="Settings">⚙️</button>
+            <button id="clearBtn" class="btn-accent" title="Clear">🗑️</button>
+            <button id="workspaceBtn" class="btn-secondary" title="Workspace">🗂️</button>
+            <button id="newParagraph" class="btn-secondary" onclick="window.location.href='word_review.html'" title="Review">🔍</button>
+            <button id="nextBtn" class="btn-primary" title="Next">➡️</button>
         </div>
     </div>
 
@@ -32,8 +33,8 @@
             </div>
             <textarea id="workspaceTextarea" placeholder="Your workspace content..."></textarea>
             <div class="modal-buttons">
-                <button id="workspaceClearBtn">Clear</button>
-                <button id="moveChunkBtn">Move Chunk</button>
+                <button id="workspaceClearBtn" class="btn-secondary">Clear</button>
+                <button id="moveChunkBtn" class="btn-primary">Move Chunk</button>
             </div>
         </div>
     </div>

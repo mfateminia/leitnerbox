@@ -1,278 +1,40 @@
-.content-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-    overflow: hidden;
-    min-height: 0;
-}
+/* Text input specific styling */
 
-#textInput {
-    width: 100%;
-    flex: 1;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    line-height: 1.4;
-    background: rgba(239, 237, 237, 0.95);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    resize: none;
-    outline: none;
-    transition: all 0.3s ease;
-    min-height: 0;
-}
-
-#textInput:focus {
-    background: rgba(255, 255, 255, 1);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
-}
+/* Text input uses global .text-input styling */
 
 #textDisplay {
-    width: 100%;
-    flex: 1;
-    padding: 10px;
-    border-radius: 8px;
+    /* Extends .text-display from global.css */
     font-size: 18px;
     line-height: 1.6;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    background: var(--color-white-transparent);
     display: none;
     overflow-y: auto;
-    min-height: 0;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
 }
 
-.word {
-    display: inline;
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
-    margin: 1px;
-}
+/* Word styling is now handled by global.css */
 
-.word:hover {
-    background: rgba(102, 126, 234, 0.2);
-}
+/* Button styling is now handled by global.css */
 
-.word.selected {
-    background: #667eea;
-    color: white;
-    font-weight: bold;
-}
-
-.button-container {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-    flex-shrink: 0;
-}
-
-button {
-    padding: 12px 16px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-#clearBtn {
-    background: #ff6b6b;
-    color: white;
-}
-
-#clearBtn:hover {
-    background: #ff5252;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
-}
-
-#nextBtn {
-    background: #4ecdc4;
-    color: white;
-}
-
-#nextBtn:hover:not(:disabled) {
-    background: #26d0ce;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
-}
-
-button:disabled {
-    background: #cccccc !important;
-    color: #666666 !important;
-    cursor: not-allowed !important;
-    transform: none !important;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
-}
-
+/* Adjust status message position for text loader */
 .status-message {
-    padding: 8px;
-    margin: 8px 0;
-    border-radius: 6px;
-    text-align: center;
-    font-weight: 500;
-    display: none;
     position: absolute;
+    top: auto;
     bottom: 70px;
     left: 10px;
     right: 10px;
     z-index: 100;
-    font-size: 14px;
 }
 
-.success {
-    background: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
-}
-
-.error {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
-}
-
-.info {
-    background: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
+/* Text loader specific responsive adjustments */
 @media (max-width: 768px) {
-    .container {
-        padding: 8px;
-    }
-
-    #textInput, #textDisplay {
-        font-size: 16px;
-        padding: 8px;
+    #textDisplay {
         border-radius: 6px;
     }
-
-    button {
-        padding: 10px 12px;
-        font-size: 13px;
-    }
-
-    .button-container {
-        gap: 8px;
-    }
-
-    .content-area {
-        margin-bottom: 8px;
-    }
 }
 
-@media (max-width: 480px) {
-    .container {
-        padding: 5px;
-    }
+/* Loading animation styling is now handled by global.css */
 
-    #textInput, #textDisplay {
-        font-size: 14px;
-        padding: 6px;
-    }
-
-    button {
-        padding: 8px 10px;
-        font-size: 12px;
-    }
-
-    .button-container {
-        gap: 6px;
-    }
-}
-
-/* Loading animation */
-.loading {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.loading::after {
-    content: "";
-    display: inline-block;
-    width: 12px;
-    height: 12px;
-    border: 2px solid #ffffff;
-    border-radius: 50%;
-    border-top-color: transparent;
-    animation: spin 1s ease-in-out infinite;
-    margin-left: 8px;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* Workspace Modal Styles */
-.modal-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    height: 100dvh;
-    background: rgba(0, 0, 0, 0.8);
-    z-index: 1000;
-}
-
-.modal-content {
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    overflow: hidden;
-}
-
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    flex-shrink: 0;
-}
-
-.modal-title {
-    color: white;
-    font-size: 18px;
-    font-weight: 600;
-}
-
-.close-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    font-size: 20px;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.3s ease;
-    flex: none;
-}
-
-.close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-}
-
+/* Workspace modal specific customizations */
 #workspaceTextarea {
     flex: 1;
     padding: 10px;
@@ -280,61 +42,10 @@ button:disabled {
     border-radius: 8px;
     font-size: 14px;
     line-height: 1.4;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--color-white-transparent);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     resize: none;
     outline: none;
     margin-bottom: 15px;
     min-height: 0;
-}
-
-.modal-buttons {
-    display: flex;
-    gap: 10px;
-    flex-shrink: 0;
-}
-
-.modal-buttons button {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-#workspaceClearBtn {
-    background: #ff6b6b;
-    color: white;
-}
-
-#workspaceClearBtn:hover {
-    background: #ff5252;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.3);
-}
-
-#moveChunkBtn {
-    background: #4ecdc4;
-    color: white;
-}
-
-#moveChunkBtn:hover {
-    background: #26d0ce;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(78, 205, 196, 0.3);
-}
-
-#workspaceBtn {
-    background: #9b59b6;
-    color: white;
-}
-
-#workspaceBtn:hover {
-    background: #8e44ad;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(155, 89, 182, 0.3);
 }

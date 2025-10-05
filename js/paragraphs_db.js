@@ -70,12 +70,15 @@ class ParagraphsDB {
             created_at: new Date().toISOString()
         };
 
+        const paragraphId = await this.dbWrapper.write(paragraph)
+
         // Add translated words to the word database
         for (const wordObj of paragraphData.translation.translated_words) {
             try {
                 await this.wordDB.addWord({
                     word: wordObj.word,
-                    translation: wordObj.translation
+                    translation: wordObj.translation,
+                    paragraphId
                 });
                 console.log(`Added word "${wordObj.word}" to word database`);
             } catch (error) {
@@ -89,7 +92,7 @@ class ParagraphsDB {
             }
         }
 
-        return await this.dbWrapper.write(paragraph);
+        return paragraphId;
     }
 
     /**
@@ -191,15 +194,16 @@ class ParagraphsDB {
      */
     async deleteParagraph(id) {
         await this.init();
-        
-        return new Promise((resolve, reject) => {
-            const transaction = this.dbWrapper.db.transaction([this.dbWrapper.storeName], 'readwrite');
-            const store = transaction.objectStore(this.dbWrapper.storeName);
-            const request = store.delete(id);
+        return await this.dbWrapper.delete(id);
+    }
 
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
+    /**
+     * Clear all paragraphs from the database
+     * @returns {Promise<void>}
+     */
+    async clearAllParagraphs() {
+        await this.init();
+        return await this.dbWrapper.clear();
     }
 
     /**

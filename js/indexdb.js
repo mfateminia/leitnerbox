@@ -69,6 +69,34 @@ class IndexedDBWrapper {
             request.onerror = () => reject(request.error);
         });
     }
+
+    async clear() {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([this.storeName], 'readwrite');
+            const store = transaction.objectStore(this.storeName);
+            const request = store.clear();
+
+            request.onsuccess = () => {
+                console.log(`Successfully cleared object store: ${this.storeName}`);
+                resolve();
+            };
+            request.onerror = () => {
+                console.error(`Error clearing object store: ${this.storeName}`, request.error);
+                reject(request.error);
+            };
+        });
+    }
+
+    async delete(id) {
+        return new Promise((resolve, reject) => {
+            const transaction = this.db.transaction([this.storeName], 'readwrite');
+            const store = transaction.objectStore(this.storeName);
+            const request = store.delete(id);
+
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
 }
 
 // Usage example:

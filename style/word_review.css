@@ -2,7 +2,7 @@
     max-width: 1200px;
     margin: 0 auto;
     padding: 10px;
-    background-color: #9ebfdd;
+    background-color: var(--color-background);
 }
 
 .review-header {
@@ -29,7 +29,7 @@
 }
 
 .stat-card {
-    background: #f5f5f5;
+    background: var(--color-surface);
     padding: 8px 12px;
     border-radius: 8px;
     text-align: center;
@@ -39,12 +39,12 @@
 .stat-number {
     font-size: 20px;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--color-text);
 }
 
 .stat-label {
     font-size: 10px;
-    color: #7f8c8d;
+    color: var(--color-disabled-text);
     text-transform: uppercase;
 }
 
@@ -67,14 +67,14 @@
     font-weight: bold;
     margin-bottom: 10px;
     padding: 8px;
-    background: #3498db;
-    color: white;
+    background: var(--color-primary);
+    color: var(--color-white);
     border-radius: 8px;
 }
 
 .word-item, .translation-item {
-    background: #e0e0e0;
-    border: 2px solid #e0e0e0;
+    background: var(--color-surface);
+    border: 2px solid var(--color-surface);
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 8px;
@@ -136,22 +136,7 @@
     animation: pulse 1.5s infinite;
 }
 
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-}
-
-@keyframes successPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
+/* Base animations are now handled by global.css */
 
 .control-buttons {
     display: flex;
@@ -162,111 +147,25 @@
     padding: 0 5px;
 }
 
+/* Button styling is now handled by global.css */
 .btn {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
     min-width: 120px;
     touch-action: manipulation;
 }
 
-.btn-primary {
-    background-color: #3498db;
-    color: white;
-}
+/* Progress bar styling is now handled by global.css */
 
-.btn-primary:hover {
-    background-color: #2980b9;
-}
-
-.btn-success {
-    background-color: #27ae60;
-    color: white;
-}
-
-.btn-success:hover {
-    background-color: #229954;
-}
-
-.btn-secondary {
-    background-color: #95a5a6;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: #7f8c8d;
-}
-
-.progress-bar {
-    width: 100%;
-    height: 16px;
-    background-color: #ecf0f1;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-bottom: 15px;
-}
-
-.progress-fill {
-    height: 100%;
-    background-color: #27ae60;
-    transition: width 0.3s ease;
-    border-radius: 8px;
-}
-
-.result-message {
-    text-align: center;
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    font-size: 16px;
-    font-weight: bold;
-    margin: 0 5px 15px 5px;
-}
-
-.result-success {
-    background-color: #d5f4e6;
-    color: #27ae60;
-}
-
-.result-incomplete {
-    background-color: #fef9e7;
-    color: #f39c12;
-}
+/* Result message styling is now handled by global.css */
 
 .loading {
     text-align: center;
     padding: 30px;
     font-size: 16px;
-    color: #7f8c8d;
+    color: var(--color-disabled-text);
 }
 
-/* Mobile-specific styles */
+/* Word review specific responsive adjustments */
 @media (max-width: 768px) {
-    .review-container {
-        padding: 5px;
-    }
-
-    .review-header h1 {
-        font-size: 1.5rem;
-    }
-
-    .review-header p {
-        font-size: 0.8rem;
-        padding: 0 10px;
-    }
-
-    .words-column, .translations-column {
-        max-width: 100%;
-    }
-
-    .column-header {
-        font-size: 14px;
-        padding: 6px;
-    }
-
     .word-item, .translation-item {
         padding: 10px;
         font-size: 13px;
@@ -274,25 +173,12 @@
         margin-bottom: 6px;
     }
 
-    .stat-card {
-        padding: 6px 8px;
-    }
-
-    .stat-number {
-        font-size: 18px;
-    }
-
-    .stat-label {
-        font-size: 9px;
-    }
-
-    .control-buttons {
-        gap: 8px;
+    .column-header {
+        font-size: 14px;
+        padding: 6px;
     }
 
     .btn {
-        padding: 8px 12px;
-        font-size: 13px;
         min-width: 100px;
     }
 
@@ -300,18 +186,9 @@
         font-size: 14px;
         padding: 12px;
     }
-
-    .progress-bar {
-        height: 14px;
-    }
 }
 
-/* Small mobile devices */
 @media (max-width: 480px) {
-    .review-header h1 {
-        font-size: 1.3rem;
-    }
-
     .word-item, .translation-item {
         font-size: 12px;
         padding: 8px;
@@ -323,21 +200,11 @@
     }
 
     .btn {
-        padding: 6px 10px;
-        font-size: 12px;
         min-width: 90px;
-    }
-
-    .stat-number {
-        font-size: 16px;
-    }
-
-    .stat-label {
-        font-size: 8px;
     }
 }
 
-/* Touch-friendly interactions */
+/* Touch-friendly interactions for word review */
 @media (hover: none) and (pointer: coarse) {
     .word-item, .translation-item {
         border-width: 3px;
@@ -348,9 +215,5 @@
     .word-item:active, .translation-item:active {
         transform: scale(0.95);
         opacity: 0.8;
-    }
-
-    .btn:active {
-        transform: scale(0.95);
     }
 }

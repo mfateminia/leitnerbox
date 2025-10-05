@@ -76,7 +76,7 @@ class ParagraphReviewApp {
         
         this.createClickableParagraph(this.currentParagraph);
         this.buttonContainer.style.display = 'flex';
-        this.revealBtn.textContent = 'Reveal Translation';
+        this.revealBtn.textContent = 'Reveal';
         this.updateStats();
     }
 
@@ -129,12 +129,12 @@ class ParagraphReviewApp {
         if (this.isShowingTranslation) {
             // Show original paragraph
             this.createClickableParagraph(this.currentParagraph);
-            this.revealBtn.textContent = 'Reveal Translation';
+            this.revealBtn.textContent = 'Reveal';
             this.isShowingTranslation = false;
         } else {
             // Show translation
             this.showTranslation();
-            this.revealBtn.textContent = 'Show Original';
+            this.revealBtn.textContent = 'Original';
             this.isShowingTranslation = true;
         }
     }

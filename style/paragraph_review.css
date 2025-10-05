@@ -1,0 +1,110 @@
+/* Paragraph-specific content area styling */
+
+#paragraphDisplay {
+    width: 100%;
+    flex: 1;
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 18px;
+    line-height: 1.6;
+    background: var(--color-surface);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-align: left;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+    min-height: 0;
+}
+
+/* Paragraph-specific word styling adjustments */
+.word {
+    padding: 3px 6px; /* Slightly more padding than global */
+    border-radius: 5px;
+}
+
+/* Button styling is now handled by global.css */
+
+.translation-content {
+    font-style: italic;
+    color: var(--color-text);
+    margin-bottom: 20px;
+}
+
+.word-explanations {
+    background: var(--color-white-overlay);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.word-explanation {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(78, 205, 196, 0.1); /* Primary color with transparency */
+    border-radius: 6px;
+    border-left: 3px solid var(--color-primary);
+}
+
+.word-explanation:last-child {
+    margin-bottom: 0;
+}
+
+.explanation-word {
+    font-weight: bold;
+    color: var(--color-primary);
+    margin-right: 8px;
+}
+
+.explanation-text {
+    color: var(--color-text);
+}
+
+/* Status message styling is now handled by global.css */
+
+/* Completion message and loading screen styling is now handled by global.css */
+
+/* Paragraph-specific responsive adjustments */
+@media (max-width: 768px) {
+    #paragraphDisplay {
+        padding: 12px;
+        border-radius: 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    #paragraphDisplay {
+        padding: 10px;
+    }
+}
+
+/* Loading animation styling is now handled by global.css */
+
+.translation-text {
+    font-size: 18px;
+    color: var(--color-text);
+    margin-bottom: 20px;
+    padding: 15px;
+}
+
+.translation-words {
+    font-size: 18px;
+}
+
+.translation-words h3 {
+    color: var(--color-text);
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+.word-explanation {
+    margin-bottom: 8px;
+    padding: 8px;
+    background: rgba(78, 205, 196, 0.05); /* Primary color with very low transparency */
+    border-radius: 4px;
+}
+
+.word-explanation strong {
+    color: var(--color-text);
+}

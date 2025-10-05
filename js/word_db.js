@@ -16,14 +16,15 @@ class WordDB {
      * @param {Object} wordData - The word object
      * @param {string} wordData.word - The word itself
      * @param {string} wordData.translation - The translation/definition of the word
+     * @param {number} wordData.paragraphId - The id of the reference paragraph
      * @returns {Promise<number>} The ID of the added word
      */
     async addWord(wordData) {
         await this.init();
         
         // Validate required fields
-        if (!wordData.word || !wordData.translation) {
-            throw new Error('Missing required fields: word and translation are required');
+        if (!wordData.word || !wordData.translation || !wordData.paragraphId) {
+            throw new Error('Missing required fields: word, translation, and paragraphId are required');
         }
 
         // Check if word already exists
@@ -38,6 +39,7 @@ class WordDB {
 
         // Create word object with automatic date handling
         const word = {
+            paragraph_id: wordData.paragraphId,
             word: wordData.word,
             translation: wordData.translation,
             last_review_date: null, // New words haven't been reviewed yet
@@ -214,15 +216,16 @@ class WordDB {
      */
     async deleteWord(id) {
         await this.init();
-        
-        return new Promise((resolve, reject) => {
-            const transaction = this.dbWrapper.db.transaction([this.dbWrapper.storeName], 'readwrite');
-            const store = transaction.objectStore(this.dbWrapper.storeName);
-            const request = store.delete(id);
+        return await this.dbWrapper.delete(id);
+    }
 
-            request.onsuccess = () => resolve();
-            request.onerror = () => reject(request.error);
-        });
+    /**
+     * Clear all words from the database
+     * @returns {Promise<void>}
+     */
+    async clearAllWords() {
+        await this.init();
+        return await this.dbWrapper.clear();
     }
 
     /**
