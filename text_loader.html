@@ -16,10 +16,8 @@
         </div>
         
         <div class="button-container">
-            <button id="settingsBtn" class="btn-secondary" onclick="window.location.href='settings.html'" title="Settings">⚙️</button>
             <button id="clearBtn" class="btn-accent" title="Clear">🗑️</button>
             <button id="workspaceBtn" class="btn-secondary" title="Workspace">🗂️</button>
-            <button id="newParagraph" class="btn-secondary" onclick="window.location.href='word_review.html'" title="Review">🔍</button>
             <button id="nextBtn" class="btn-primary" title="Next">➡️</button>
         </div>
     </div>
@@ -39,6 +37,35 @@
         </div>
     </div>
 
+    <!-- Overview Modal -->
+    <div id="overviewModal" class="modal-overlay">
+        <div class="modal-content overview-modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Paragraph Overview</h2>
+                <button class="close-btn" id="closeOverviewModalBtn">&times;</button>
+            </div>
+            <div class="overview-content">
+                <div class="overview-section">
+                    <h3>Original Paragraph</h3>
+                    <div id="overviewParagraph" class="overview-text"></div>
+                </div>
+                <div class="overview-section">
+                    <h3>Translation</h3>
+                    <div id="overviewTranslation" class="overview-text hidden-translation">Click "Reveal" to see the translation</div>
+                    <button id="revealTranslationBtn" class="btn-secondary reveal-btn">Reveal</button>
+                </div>
+                <div class="overview-section">
+                    <h3>Selected Words</h3>
+                    <div id="overviewWords" class="overview-words"></div>
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button id="overviewCloseBtn" class="btn-primary">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/hamburger_menu.js"></script>
     <script src="js/indexdb.js"></script>
     <script src="js/word_db.js"></script>
     <script src="js/paragraphs_db.js"></script>

@@ -14,6 +14,15 @@ class ParagraphLearningApp {
         this.workspaceClearBtn = document.getElementById('workspaceClearBtn');
         this.moveChunkBtn = document.getElementById('moveChunkBtn');
 
+        // Overview modal elements
+        this.overviewModal = document.getElementById('overviewModal');
+        this.closeOverviewModalBtn = document.getElementById('closeOverviewModalBtn');
+        this.overviewCloseBtn = document.getElementById('overviewCloseBtn');
+        this.overviewParagraph = document.getElementById('overviewParagraph');
+        this.overviewTranslation = document.getElementById('overviewTranslation');
+        this.overviewWords = document.getElementById('overviewWords');
+        this.revealTranslationBtn = document.getElementById('revealTranslationBtn');
+
         this.selectedWords = [];
         this.originalText = '';
         this.currentMode = 'input'; // 'input' or 'selection'
@@ -39,6 +48,16 @@ class ParagraphLearningApp {
         this.workspaceModal.addEventListener('click', (e) => {
             if (e.target === this.workspaceModal) {
                 this.closeWorkspaceModal();
+            }
+        });
+
+        // Overview modal events
+        this.closeOverviewModalBtn.addEventListener('click', () => this.closeOverviewModal());
+        this.overviewCloseBtn.addEventListener('click', () => this.closeOverviewModal());
+        this.revealTranslationBtn.addEventListener('click', () => this.revealTranslation());
+        this.overviewModal.addEventListener('click', (e) => {
+            if (e.target === this.overviewModal) {
+                this.closeOverviewModal();
             }
         });
 
@@ -142,6 +161,63 @@ class ParagraphLearningApp {
 
     saveWorkspaceToStorage() {
         localStorage.setItem('workspace', this.workspaceTextarea.value);
+    }
+
+    // Overview modal methods
+    showOverviewModal(paragraphData, aiResponse) {
+        // Populate the modal with data
+        this.overviewParagraph.textContent = paragraphData.paragraph;
+        
+        // Reset translation state (hide translation, show reveal button)
+        this.overviewTranslation.textContent = 'Click "Reveal" to see the translation';
+        this.overviewTranslation.className = 'overview-text hidden-translation';
+        this.revealTranslationBtn.style.display = 'inline-block';
+        this.revealTranslationBtn.textContent = 'Reveal';
+        
+        // Store the translation for later reveal
+        this.currentTranslation = aiResponse.translated_paragraph;
+        
+        // Clear previous words
+        this.overviewWords.innerHTML = '';
+        
+        // Add word pairs
+        aiResponse.translated_words.forEach(wordData => {
+            const wordPair = document.createElement('div');
+            wordPair.className = 'word-pair';
+            
+            const original = document.createElement('span');
+            original.className = 'word-original';
+            original.textContent = wordData.word;
+            
+            const translation = document.createElement('span');
+            translation.className = 'word-translation';
+            translation.textContent = wordData.translation;
+            
+            wordPair.appendChild(original);
+            wordPair.appendChild(translation);
+            this.overviewWords.appendChild(wordPair);
+        });
+        
+        // Show the modal
+        this.overviewModal.style.display = 'block';
+    }
+    
+    revealTranslation() {
+        if (this.overviewTranslation.classList.contains('hidden-translation')) {
+            // Reveal the translation
+            this.overviewTranslation.textContent = this.currentTranslation;
+            this.overviewTranslation.classList.remove('hidden-translation');
+            this.revealTranslationBtn.textContent = 'Hide';
+        } else {
+            // Hide the translation
+            this.overviewTranslation.textContent = 'Click "Reveal" to see the translation';
+            this.overviewTranslation.classList.add('hidden-translation');
+            this.revealTranslationBtn.textContent = 'Reveal';
+        }
+    }
+    
+    closeOverviewModal() {
+        this.overviewModal.style.display = 'none';
     }
 
     autoResize() {
@@ -384,6 +460,9 @@ Example Output:
             await this.paragraphsDB.addParagraph(paragraphData);
 
             this.showMessage(`Successfully saved with translation! Selected ${this.selectedWords.length} words.`, 'success');
+
+            // Show overview modal with the saved data
+            this.showOverviewModal(paragraphData, aiResponse);
 
             // Reset the workspace immediately
             this.resetWorkspace();

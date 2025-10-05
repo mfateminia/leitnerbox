@@ -49,3 +49,101 @@
     margin-bottom: 15px;
     min-height: 0;
 }
+
+/* Overview modal specific styling */
+.overview-modal .modal-content {
+    max-width: 600px;
+    margin: 0 auto;
+    height: auto;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.overview-content {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+.overview-section {
+    margin-bottom: 20px;
+}
+
+.overview-section h3 {
+    color: var(--color-white);
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 4px;
+}
+
+.overview-text {
+    background: var(--color-white-transparent);
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.overview-words {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.word-pair {
+    background: var(--color-white-transparent);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    flex: 0 1 calc(50% - 4px);
+    min-width: 120px;
+}
+
+.word-original {
+    font-weight: 600;
+    color: var(--color-primary);
+    display: block;
+    margin-bottom: 2px;
+}
+
+.word-translation {
+    color: var(--color-text-secondary);
+    font-size: 12px;
+}
+
+/* Translation reveal functionality */
+.hidden-translation {
+    color: var(--color-text-secondary);
+    font-style: italic;
+    text-align: center;
+    opacity: 0.7;
+}
+
+.reveal-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    min-height: auto;
+}
+
+.reveal-btn.hidden {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .overview-modal .modal-content {
+        max-width: none;
+        margin: 0;
+        padding: 8px;
+    }
+    
+    .word-pair {
+        flex: 1 1 100%;
+        min-width: auto;
+    }
+}
