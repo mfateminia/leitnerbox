@@ -4,7 +4,7 @@
 
 #textDisplay {
     /* Extends .text-display from global.css */
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1.6;
     background: var(--color-white-transparent);
     display: none;
@@ -40,7 +40,7 @@
     padding: 10px;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 20px;
     line-height: 1.4;
     background: var(--color-white-transparent);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -71,7 +71,7 @@
 
 .overview-section h3 {
     color: var(--color-white);
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 600;
     margin-bottom: 8px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
@@ -82,7 +82,7 @@
     background: var(--color-white-transparent);
     padding: 12px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 20px;
     line-height: 1.5;
     margin-bottom: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -113,7 +113,7 @@
 
 .word-translation {
     color: var(--color-text-secondary);
-    font-size: 12px;
+    font-size: 18px;
 }
 
 /* Translation reveal functionality */

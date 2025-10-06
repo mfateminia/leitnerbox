@@ -85,7 +85,6 @@ class ParagraphLearningApp {
     // Workspace modal methods
     openWorkspaceModal() {
         this.workspaceModal.style.display = 'block';
-        this.workspaceTextarea.focus();
     }
 
     closeWorkspaceModal() {
@@ -123,7 +122,7 @@ class ParagraphLearningApp {
         this.textInput.value = newText;
         this.autoResize();
         this.updateNextButtonState();
-
+        this.textInput.blur(); // Remove focus to prevent mobile zoom
         this.showMessage(`Moved chunk (${chunk.split(/\s+/).length} words) to main text!`, 'success');
         this.closeWorkspaceModal();
     }

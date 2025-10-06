@@ -376,7 +376,7 @@ button:disabled {
     padding: 10px;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: 20px;
     line-height: 1.4;
     background: var(--color-surface);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -498,7 +498,7 @@ button:disabled {
     }
 
     .text-input, .text-display {
-        font-size: 18px;
+        font-size: 20px;
         padding: 8px;
         border-radius: 6px;
     }
@@ -535,7 +535,7 @@ button:disabled {
     }
 
     .text-input, .text-display {
-        font-size: 14px;
+        font-size: 20px;
         padding: 6px;
     }
 

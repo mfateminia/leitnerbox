@@ -5,7 +5,7 @@
     flex: 1;
     padding: 15px;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1.6;
     background: var(--color-surface);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -82,14 +82,14 @@
 /* Loading animation styling is now handled by global.css */
 
 .translation-text {
-    font-size: 18px;
+    font-size: 20px;
     color: var(--color-text);
     margin-bottom: 20px;
     padding: 15px;
 }
 
 .translation-words {
-    font-size: 18px;
+    font-size: 20px;
 }
 
 .translation-words h3 {

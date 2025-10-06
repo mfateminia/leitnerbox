@@ -16,7 +16,7 @@
 }
 
 .review-header p {
-    font-size: 0.9rem;
+    font-size: 20px;
     margin: 0;
 }
 
@@ -86,7 +86,7 @@
     align-items: center;
     justify-content: center;
     text-align: center;
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.2;
     touch-action: none;
 }
@@ -168,13 +168,13 @@
 @media (max-width: 768px) {
     .word-item, .translation-item {
         padding: 10px;
-        font-size: 13px;
+        font-size: 16px;
         min-height: 40px;
         margin-bottom: 6px;
     }
 
     .column-header {
-        font-size: 14px;
+        font-size: 16px;
         padding: 6px;
     }
 
@@ -190,13 +190,13 @@
 
 @media (max-width: 480px) {
     .word-item, .translation-item {
-        font-size: 12px;
+        font-size: 16px;
         padding: 8px;
         min-height: 35px;
     }
 
     .column-header {
-        font-size: 13px;
+        font-size: 16px;
     }
 
     .btn {
