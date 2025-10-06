@@ -6,12 +6,12 @@
     --color-surface: rgba(239, 237, 237, 0.95);
     
     /* Button Colors */
-    --color-primary: #00a933;
+    --color-primary: #4587bc;
     --color-secondary: #5b5b5b;
     --color-accent: #fc3e3e;
     
     /* Hover States (10% darker) */
-    --color-primary-hover: #26d0ce;
+    --color-primary-hover: #4587bc;
     --color-secondary-hover: #ff5252;
     --color-accent-hover: #e0a800;
     
@@ -128,10 +128,6 @@ button {
     text-overflow: ellipsis;
 }
 
-button:hover {
-    transform: translateY(-2px);
-}
-
 button:disabled {
     background: var(--color-disabled-bg) !important;
     color: var(--color-disabled-text) !important;
@@ -146,29 +142,14 @@ button:disabled {
     color: var(--color-white);
 }
 
-.btn-primary:hover {
-    background: var(--color-primary-hover);
-    box-shadow: 0 6px 20px var(--shadow-primary);
-}
-
 .btn-secondary {
     background: var(--color-secondary);
     color: var(--color-white);
 }
 
-.btn-secondary:hover, #clearBtn:hover {
-    background: var(--color-secondary-hover);
-    box-shadow: 0 6px 20px var(--shadow-secondary);
-}
-
 .btn-accent {
     background: var(--color-accent);
     color: var(--color-text);
-}
-
-.btn-accent:hover {
-    background: var(--color-accent-hover);
-    box-shadow: 0 6px 20px var(--shadow-accent);
 }
 
 /* Legacy class mappings for backward compatibility */
@@ -177,19 +158,9 @@ button:disabled {
     color: var(--color-text);
 }
 
-.btn-warning:hover {
-    background: var(--color-accent-hover);
-    box-shadow: 0 6px 20px var(--shadow-accent);
-}
-
 .btn-success { /* Maps to primary */
     background: var(--color-primary);
     color: var(--color-white);
-}
-
-.btn-success:hover {
-    background: var(--color-primary-hover);
-    box-shadow: 0 6px 20px var(--shadow-primary);
 }
 
 .btn-info { /* Maps to accent */
@@ -197,29 +168,14 @@ button:disabled {
     color: var(--color-text);
 }
 
-.btn-info:hover {
-    background: var(--color-accent-hover);
-    box-shadow: 0 6px 20px var(--shadow-accent);
-}
-
 .btn-light { /* Maps to secondary */
     background: var(--color-secondary);
     color: var(--color-white);
 }
 
-.btn-light:hover {
-    background: var(--color-secondary-hover);
-    box-shadow: 0 6px 20px var(--shadow-secondary);
-}
-
 .btn-blue { /* Maps to primary */
     background: var(--color-primary);
     color: var(--color-white);
-}
-
-.btn-blue:hover {
-    background: var(--color-primary-hover);
-    box-shadow: 0 6px 20px var(--shadow-primary);
 }
 
 /* Status Message Styles */
@@ -357,10 +313,6 @@ button:disabled {
     justify-content: center;
     transition: background 0.3s ease;
     flex: none;
-}
-
-.close-btn:hover {
-    background: var(--color-white-overlay-hover);
 }
 
 .modal-buttons {
@@ -675,12 +627,6 @@ button:disabled {
     border-radius: 0;
 }
 
-.nav-menu a:hover {
-    background-color: var(--color-primary);
-    color: var(--color-white);
-    padding-left: 25px;
-}
-
 .nav-menu a .icon {
     margin-right: 12px;
     font-size: 18px;
@@ -688,12 +634,8 @@ button:disabled {
 }
 
 .nav-menu a.current-page {
-    background-color: var(--color-accent);
+    background-color: var(--color-primary);
     color: var(--color-white);
-}
-
-.nav-menu a.current-page:hover {
-    background-color: var(--color-accent-hover);
 }
 
 /* Mobile adjustments for hamburger menu */

@@ -67,6 +67,7 @@ class ParagraphsDB {
             last_reviewed_at: paragraphData.last_reviewed_at || null,
             count_of_successful_reviews: paragraphData.count_of_successful_reviews || 0,
             is_excluded: paragraphData.is_excluded || false,
+            is_mastered: false, // New paragraphs are not mastered
             created_at: new Date().toISOString()
         };
 
@@ -115,13 +116,23 @@ class ParagraphsDB {
     }
 
     /**
-     * Get paragraphs that are not excluded
-     * @returns {Promise<Object[]>} Array of non-excluded paragraph objects
+     * Get paragraphs that are not excluded and not mastered (for review)
+     * @returns {Promise<Object[]>} Array of non-excluded, non-mastered paragraph objects
      */
     async getActiveParagraphs() {
         await this.init();
         const allParagraphs = await this.dbWrapper.readAll();
-        return allParagraphs.filter(p => !p.is_excluded);
+        return allParagraphs.filter(p => !p.is_excluded && !p.is_mastered);
+    }
+
+    /**
+     * Get paragraphs that are mastered
+     * @returns {Promise<Object[]>} Array of mastered paragraph objects
+     */
+    async getMasteredParagraphs() {
+        await this.init();
+        const allParagraphs = await this.dbWrapper.readAll();
+        return allParagraphs.filter(p => p.is_mastered);
     }
 
     /**
@@ -142,6 +153,15 @@ class ParagraphsDB {
         
         if (wasSuccessful) {
             paragraph.count_of_successful_reviews += 1;
+            
+            // Mark as mastered if successfully reviewed 5 times in a row
+            if (paragraph.count_of_successful_reviews >= 5) {
+                paragraph.is_mastered = true;
+            }
+        } else {
+            // Reset successful review count on failure
+            paragraph.count_of_successful_reviews = 0;
+            paragraph.is_mastered = false;
         }
 
         return await this.updateParagraph(id, paragraph);
@@ -188,6 +208,29 @@ class ParagraphsDB {
     }
 
     /**
+     * Toggle the mastered status of a paragraph
+     * @param {number} id - The paragraph ID
+     * @returns {Promise<void>}
+     */
+    async toggleMastered(id) {
+        await this.init();
+        const paragraph = await this.getParagraph(id);
+        
+        if (!paragraph) {
+            throw new Error(`Paragraph with ID ${id} not found`);
+        }
+
+        paragraph.is_mastered = !paragraph.is_mastered;
+        
+        if (!paragraph.is_mastered) {
+            // Reset review count when unmarking as mastered
+            paragraph.count_of_successful_reviews = 0;
+        }
+        
+        return await this.updateParagraph(id, paragraph);
+    }
+
+    /**
      * Delete a paragraph
      * @param {number} id - The paragraph ID
      * @returns {Promise<void>}
@@ -207,7 +250,7 @@ class ParagraphsDB {
     }
 
     /**
-     * Get paragraphs due for review (based on spaced repetition logic)
+     * Get paragraphs due for review (using same logic as word database)
      * @returns {Promise<Object[]>} Array of paragraphs due for review
      */
     async getParagraphsDueForReview() {
@@ -225,7 +268,7 @@ class ParagraphsDB {
             
             // Simple spaced repetition: interval increases with successful reviews
             // 1st review: 1 day, 2nd: 3 days, 3rd: 7 days, 4th: 14 days, etc.
-            const intervals = [1, 3, 7, 14, 30, 60, 120, 240];
+            const intervals = [1, 3, 7, 14, 30];
             const reviewCount = paragraph.count_of_successful_reviews;
             const requiredInterval = intervals[Math.min(reviewCount, intervals.length - 1)];
             

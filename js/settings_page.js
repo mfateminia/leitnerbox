@@ -60,17 +60,6 @@ class SettingsPage {
             this.clearAllData();
         });
 
-        // Modal events
-        this.confirmBtn.addEventListener('click', () => this.executeConfirmedAction());
-        this.cancelBtn.addEventListener('click', () => this.closeConfirmModal());
-
-        // Close modal when clicking outside
-        this.confirmModal.addEventListener('click', (e) => {
-            if (e.target === this.confirmModal) {
-                this.closeConfirmModal();
-            }
-        });
-
         // Auto-save API key on blur
         this.geminiKeyInput.addEventListener('blur', () => this.saveGeminiKeyUpdate());
     }
@@ -180,6 +169,12 @@ class SettingsPage {
     }
 
     async handleRestoreFile(event) {
+        const userConfirmed = confirm("You're about to clear and restore all data. Are you sure?");
+
+        if (!userConfirmed) {
+            return;
+        }
+
         const file = event.target.files[0];
         if (!file) return;
 
@@ -191,12 +186,7 @@ class SettingsPage {
             if (!backup.data || !Array.isArray(backup.data.words) || !Array.isArray(backup.data.paragraphs)) {
                 throw new Error('Invalid backup file format');
             }
-
-            // Show confirmation
-            this.confirmAction('restore', 'Restore Data', 
-                `This will replace all current data with the backup data. The backup contains ${backup.data.words.length} words and ${backup.data.paragraphs.length} paragraphs. This action cannot be undone.`,
-                () => this.restoreData(backup.data)
-            );
+            await this.restoreData(backup.data);
 
         } catch (error) {
             console.error('Error reading backup file:', error);
@@ -248,40 +238,13 @@ class SettingsPage {
         this.confirmModal.style.display = 'block';
     }
 
-    closeConfirmModal() {
-        this.confirmModal.style.display = 'none';
-        this.pendingAction = null;
-    }
+    async clearWords() {
+        const userConfirmed = confirm("You're about to clear all words. Are you sure?");
 
-    async executeConfirmedAction() {
-        console.log('Executing confirmed action:', this.pendingAction);
-        
-        if (!this.pendingAction) return;
-
-        this.closeConfirmModal();
-
-        if (typeof this.pendingAction === 'function') {
-            await this.pendingAction();
+        if (!userConfirmed) {
             return;
         }
 
-        switch (this.pendingAction) {
-            case 'clearWords':
-                console.log('Calling clearWords...');
-                await this.clearWords();
-                break;
-            case 'clearParagraphs':
-                console.log('Calling clearParagraphs...');
-                await this.clearParagraphs();
-                break;
-            case 'clearAll':
-                console.log('Calling clearAllData...');
-                await this.clearAllData();
-                break;
-        }
-    }
-
-    async clearWords() {
         try {
             console.log('Starting clearWords...');
             await this.wordDB.init();
@@ -324,6 +287,12 @@ class SettingsPage {
     }
 
     async clearParagraphs() {
+        const userConfirmed = confirm("You're about to clear all paragraphs. Are you sure?");
+
+        if (!userConfirmed) {
+            return;
+        }
+
         try {
             console.log('Starting clearParagraphs...');
             await this.paragraphsDB.init();
@@ -366,6 +335,12 @@ class SettingsPage {
     }
 
     async clearAllData(showMessage = true) {
+        const userConfirmed = confirm("You're about to clear all data. Are you sure?");
+
+        if (!userConfirmed) {
+            return;
+        }
+
         try {
             console.log('Starting clearAllData...');
             await this.wordDB.init();

@@ -10,7 +10,6 @@ class WordReviewApp {
         this.selectedWordForTouch = null; // For mobile touch interactions
         
         this.initializeElements();
-        this.attachEventListeners();
         this.loadStatistics();
         this.autoStartReview(); // Auto-load words when page loads
     }
@@ -31,11 +30,6 @@ class WordReviewApp {
             accuracy: document.getElementById('accuracy'),
             progressFill: document.getElementById('progressFill')
         };
-    }
-
-    attachEventListeners() {
-        this.elements.resetBtn.addEventListener('click', () => this.resetExercise());
-        this.elements.finishReviewBtn.addEventListener('click', () => this.finishReview());
     }
 
     async loadStatistics() {
@@ -59,11 +53,6 @@ class WordReviewApp {
                 // No words to review, redirect to paragraph review
                 this.showResultMessage('No words are due for review today! Redirecting to paragraph review... 🎉', 'result-success');
                 this.elements.loadingMessage.style.display = 'none';
-                
-                // Wait 2 seconds then redirect to paragraph_review.html
-                setTimeout(() => {
-                    window.location.href = 'paragraph_review.html';
-                }, 1000);
                 return;
             }
 
@@ -101,9 +90,6 @@ class WordReviewApp {
     setupMatchingExercise() {
         this.elements.loadingMessage.style.display = 'none';
         this.elements.matchingArea.style.display = 'flex';
-        this.elements.checkAnswersBtn.style.display = 'none'; // Hide check answers button
-        this.elements.resetBtn.style.display = 'inline-block';
-        this.elements.finishReviewBtn.style.display = 'none'; // Hide finish review button
         
         this.matches.clear();
         this.correctMatches = 0;

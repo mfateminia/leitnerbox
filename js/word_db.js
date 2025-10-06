@@ -17,6 +17,8 @@ class WordDB {
      * @param {string} wordData.word - The word itself
      * @param {string} wordData.translation - The translation/definition of the word
      * @param {number} wordData.paragraphId - The id of the reference paragraph
+     * @param {Date|null} [wordData.last_reviewed_at] - Last review date (optional, defaults to null)
+     * @param {number} wordData.count_of_successful_reviews - Number of successful reviews (optional, defaults to 0)
      * @returns {Promise<number>} The ID of the added word
      */
     async addWord(wordData) {
@@ -33,18 +35,13 @@ class WordDB {
             throw new Error(`Word "${wordData.word}" already exists in the database`);
         }
 
-        // Calculate next review date (tomorrow for new words)
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-
         // Create word object with automatic date handling
         const word = {
             paragraph_id: wordData.paragraphId,
             word: wordData.word,
             translation: wordData.translation,
-            last_review_date: null, // New words haven't been reviewed yet
-            next_review_at: tomorrow.toISOString(), // Schedule for tomorrow
-            successful_review_count: 0, // Start with 0 successful reviews
+            last_reviewed_at: null, // New words haven't been reviewed yet
+            count_of_successful_reviews: 0, // Start with 0 successful reviews
             is_mastered: false, // New words are not mastered
             created_at: new Date().toISOString()
         };
@@ -116,46 +113,45 @@ class WordDB {
             throw new Error(`Word with ID ${id} not found`);
         }
 
-        word.last_review_date = new Date().toISOString();
+        word.last_reviewed_at = new Date().toISOString();
         
         if (wasSuccessful) {
-            word.successful_review_count += 1;
+            word.count_of_successful_reviews += 1;
             
             // Mark as mastered if successfully reviewed 5 times in a row
-            if (word.successful_review_count >= 5) {
+            if (word.count_of_successful_reviews >= 5) {
                 word.is_mastered = true;
-                word.next_review_at = null; // No more reviews needed
-            } else {
-                // Calculate next review date based on spaced repetition
-                word.next_review_at = this.calculateNextReviewDate(word.successful_review_count);
             }
         } else {
             // Reset successful review count on failure
-            word.successful_review_count = 0;
+            word.count_of_successful_reviews = 0;
             word.is_mastered = false;
-            // Schedule next review for tomorrow
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            word.next_review_at = tomorrow.toISOString();
         }
 
         return await this.updateWord(id, word);
     }
 
     /**
-     * Calculate next review date based on successful review count
-     * @param {number} successfulCount - Number of successful reviews
-     * @returns {string} ISO string of next review date
+     * Toggle the mastered status of a word
+     * @param {number} id - The word ID
+     * @returns {Promise<void>}
      */
-    calculateNextReviewDate(successfulCount) {
-        // Spaced repetition intervals: 1 day, 3 days, 7 days, 14 days
-        const intervals = [1, 3, 7, 14];
-        const daysToAdd = intervals[Math.min(successfulCount - 1, intervals.length - 1)];
+    async toggleMastered(id) {
+        await this.init();
+        const word = await this.getWord(id);
         
-        const nextReviewDate = new Date();
-        nextReviewDate.setDate(nextReviewDate.getDate() + daysToAdd);
+        if (!word) {
+            throw new Error(`Word with ID ${id} not found`);
+        }
+
+        word.is_mastered = !word.is_mastered;
         
-        return nextReviewDate.toISOString();
+        if (!word.is_mastered) {
+            // Reset review count when unmarking as mastered
+            word.count_of_successful_reviews = 0;
+        }
+        
+        return await this.updateWord(id, word);
     }
 
     /**
@@ -182,34 +178,6 @@ class WordDB {
     }
 
     /**
-     * Toggle the mastered status of a word
-     * @param {number} id - The word ID
-     * @returns {Promise<void>}
-     */
-    async toggleMastered(id) {
-        await this.init();
-        const word = await this.getWord(id);
-        
-        if (!word) {
-            throw new Error(`Word with ID ${id} not found`);
-        }
-
-        word.is_mastered = !word.is_mastered;
-        
-        if (word.is_mastered) {
-            word.next_review_at = null; // No more reviews needed
-        } else {
-            // Reset and schedule next review
-            word.successful_review_count = 0;
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            word.next_review_at = tomorrow.toISOString();
-        }
-        
-        return await this.updateWord(id, word);
-    }
-
-    /**
      * Delete a word
      * @param {number} id - The word ID
      * @returns {Promise<void>}
@@ -229,20 +197,29 @@ class WordDB {
     }
 
     /**
-     * Get words due for review
+     * Get words due for review (using same logic as paragraph database)
      * @returns {Promise<Object[]>} Array of words due for review
      */
     async getWordsDueForReview() {
         await this.init();
         const activeWords = await this.getActiveWords();
         const now = new Date();
+        
         return activeWords.filter(word => {
-            if (!word.next_review_at) {
-                return true; // Never reviewed or no scheduled review, so due for review
+            if (!word.last_reviewed_at) {
+                return true; // Never reviewed, so due for review
             }
             
-            const nextReviewDate = new Date(word.next_review_at);
-            return now >= nextReviewDate;
+            const lastReviewed = new Date(word.last_reviewed_at);
+            const daysSinceReview = Math.floor((now - lastReviewed) / (1000 * 60 * 60 * 24));
+            
+            // Simple spaced repetition: interval increases with successful reviews
+            // 1st review: 1 day, 2nd: 3 days, 3rd: 7 days, 4th: 14 days, etc.
+            const intervals = [1, 3, 7, 14, 30];
+            const reviewCount = word.count_of_successful_reviews;
+            const requiredInterval = intervals[Math.min(reviewCount, intervals.length - 1)];
+            
+            return daysSinceReview >= requiredInterval;
         });
     }
 

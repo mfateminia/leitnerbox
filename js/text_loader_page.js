@@ -12,6 +12,7 @@ class ParagraphLearningApp {
         this.workspaceTextarea = document.getElementById('workspaceTextarea');
         this.closeModalBtn = document.getElementById('closeModalBtn');
         this.workspaceClearBtn = document.getElementById('workspaceClearBtn');
+        this.workspacePasteBtn = document.getElementById('workspacePasteBtn');
         this.moveChunkBtn = document.getElementById('moveChunkBtn');
 
         // Overview modal elements
@@ -41,6 +42,7 @@ class ParagraphLearningApp {
         // Workspace modal events
         this.closeModalBtn.addEventListener('click', () => this.closeWorkspaceModal());
         this.workspaceClearBtn.addEventListener('click', () => this.clearWorkspace());
+        this.workspacePasteBtn.addEventListener('click', () => this.pasteToWorkspace());
         this.moveChunkBtn.addEventListener('click', () => this.moveChunk());
         this.workspaceTextarea.addEventListener('input', () => this.saveWorkspaceToStorage());
 
@@ -95,6 +97,32 @@ class ParagraphLearningApp {
         this.workspaceTextarea.value = '';
         this.saveWorkspaceToStorage();
         this.showMessage('Workspace cleared!', 'info');
+    }
+
+    async pasteToWorkspace() {
+        try {
+            // Check if clipboard API is available
+            if (!navigator.clipboard) {
+                throw new Error('Clipboard API not available');
+            }
+
+            const clipboardText = await navigator.clipboard.readText();
+            if (!clipboardText.trim()) {
+                this.showMessage('Clipboard is empty!', 'error');
+                return;
+            }
+
+            // Add clipboard content to workspace (append if there's existing content)
+            const currentContent = this.workspaceTextarea.value.trim();
+            const newContent = currentContent ? currentContent + '\n\n' + clipboardText : clipboardText;
+            this.workspaceTextarea.value = newContent;
+            this.saveWorkspaceToStorage();
+            
+            this.showMessage('Pasted content to workspace!', 'success');
+        } catch (error) {
+            console.error('Failed to paste from clipboard:', error);
+            this.showMessage('Failed to paste from clipboard. Make sure your browser supports clipboard access.', 'error');
+        }
     }
 
     moveChunk() {
@@ -242,9 +270,13 @@ class ParagraphLearningApp {
     }
 
     handleClear() {
+        const userConfirmed = confirm("Are you sure?");
+
+        if (!userConfirmed) {
+            return;
+        }
         if (this.currentMode === 'input') {
             this.textInput.value = '';
-            this.textInput.focus();
         } else {
             // Reset to input mode
             this.currentMode = 'input';
@@ -253,7 +285,6 @@ class ParagraphLearningApp {
             this.textInput.style.display = 'block';
             this.textDisplay.style.display = 'none';
             this.textInput.value = '';
-            this.textInput.focus();
             this.nextBtn.textContent = 'Next';
         }
         this.updateNextButtonState();
@@ -287,7 +318,7 @@ class ParagraphLearningApp {
         this.createClickableWords(text);
 
         // Change button text
-        this.nextBtn.textContent = 'Save to Database';
+        this.nextBtn.textContent = 'Save';
 
         this.showMessage('Click on words to select them. Click again to deselect.', 'info');
     }
@@ -350,7 +381,6 @@ class ParagraphLearningApp {
         this.textInput.value = '';
         this.nextBtn.textContent = 'Next';
         this.updateNextButtonState();
-        this.textInput.focus();
     }
 
     async getTranslationFromGemini(paragraph, words) {
