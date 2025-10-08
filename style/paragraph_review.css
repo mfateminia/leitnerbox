@@ -19,35 +19,54 @@
     min-height: 0;
 }
 
-/* Paragraph-specific word styling adjustments */
-.word {
-    padding: 3px 6px; /* Slightly more padding than global */
-    border-radius: 5px;
+/* Paragraph text display without word selection */
+.paragraph-text {
+    background: var(--color-white-transparent);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 20px;
+    line-height: 1.6;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Button styling is now handled by global.css */
-
-.translation-content {
+/* Translation display styling */
+.translation-text {
+    background: var(--color-white-transparent);
+    padding: 15px;
+    border-radius: 8px;
+    font-size: 20px;
+    line-height: 1.6;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     font-style: italic;
     color: var(--color-text);
-    margin-bottom: 20px;
 }
 
-.word-explanations {
+/* Phrase explanations */
+.translation-words {
     background: var(--color-white-overlay);
     border-radius: 8px;
     padding: 15px;
 }
 
-.word-explanation {
+.translation-words h3 {
+    color: var(--color-primary);
+    font-size: 18px;
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 5px;
+}
+
+.phrase-explanation {
     margin-bottom: 10px;
-    padding: 8px;
+    padding: 8px 12px;
     background: rgba(78, 205, 196, 0.1); /* Primary color with transparency */
     border-radius: 6px;
     border-left: 3px solid var(--color-primary);
+    font-size: 16px;
 }
 
-.word-explanation:last-child {
+.phrase-explanation:last-child {
     margin-bottom: 0;
 }
 

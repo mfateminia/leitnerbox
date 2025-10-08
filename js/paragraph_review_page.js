@@ -11,8 +11,6 @@ class ParagraphReviewApp {
         this.reviewParagraphs = [];
         this.currentIndex = 0;
         this.currentParagraph = null;
-        this.currentSelectedWords = new Set();
-        this.clickedWords = new Set();
         this.isShowingTranslation = false;
         
         this.initializeApp();
@@ -70,65 +68,23 @@ class ParagraphReviewApp {
         }
 
         this.currentParagraph = this.reviewParagraphs[this.currentIndex];
-        this.currentSelectedWords.clear();
-        this.clickedWords.clear();
         this.isShowingTranslation = false;
         
-        this.createClickableParagraph(this.currentParagraph);
+        // Simply display the paragraph text without word selection
+        this.paragraphDisplay.innerHTML = `<div class="paragraph-text">${this.currentParagraph.paragraph}</div>`;
         this.buttonContainer.style.display = 'flex';
         this.revealBtn.textContent = 'Reveal';
         this.updateStats();
     }
 
-    createClickableParagraph(paragraph) {
-        const text = paragraph.paragraph;
-        
-        // Words are now stored as original words (with Swedish characters), so normalize for comparison
-        this.currentSelectedWords = new Set(
-            paragraph.words.map(word => word.replace(/[^\w\såäöÅÄÖ]/g, '').toLowerCase())
-        );
-        
-        console.log('Stored words from database:', paragraph.words);
-        console.log('Normalized selected words set:', this.currentSelectedWords);
-        
-        // Split text into words while preserving punctuation and spaces
-        const tokens = text.match(/\S+|\s+/g) || [];
-        
-        this.paragraphDisplay.innerHTML = '';
-        
-        tokens.forEach((token) => {
-            if (token.trim()) {
-                // It's a word
-                const wordSpan = document.createElement('span');
-                wordSpan.className = 'word';
-                wordSpan.textContent = token;
-                
-                // Clean the token to match normalized format (preserve Swedish letters)
-                const cleanWord = token.replace(/[^\w\såäöÅÄÖ]/g, '').toLowerCase();
-                
-                console.log(`Checking token: "${token}" -> clean: "${cleanWord}", isSelected: ${this.currentSelectedWords.has(cleanWord)}`);
-                
-                if (this.currentSelectedWords.has(cleanWord)) {
-                    wordSpan.classList.add('marked');
-                    console.log(`MARKED: "${token}"`);
-                }
-                
-                wordSpan.addEventListener('click', () => this.toggleWord(cleanWord, wordSpan));
-                this.paragraphDisplay.appendChild(wordSpan);
-            } else {
-                // It's whitespace
-                const textNode = document.createTextNode(token);
-                this.paragraphDisplay.appendChild(textNode);
-            }
-        });
-    }
+
 
     handleReveal() {
         if (!this.currentParagraph) return;
         
         if (this.isShowingTranslation) {
             // Show original paragraph
-            this.createClickableParagraph(this.currentParagraph);
+            this.paragraphDisplay.innerHTML = `<div class="paragraph-text">${this.currentParagraph.paragraph}</div>`;
             this.revealBtn.textContent = 'Reveal';
             this.isShowingTranslation = false;
         } else {
@@ -140,59 +96,37 @@ class ParagraphReviewApp {
     }
     
     showTranslation() {
-        if (!this.currentParagraph || !this.currentParagraph.translation) {
+        if (!this.currentParagraph || !this.currentParagraph.translated_paragraph) {
             this.paragraphDisplay.innerHTML = '<div class="translation-text">Translation not available</div>';
             return;
         }
         
-        const translation = this.currentParagraph.translation;
         this.paragraphDisplay.innerHTML = '';
         
         // Show translated text
         const translationDiv = document.createElement('div');
         translationDiv.className = 'translation-text';
-        translationDiv.innerHTML = translation.text;
+        translationDiv.innerHTML = this.currentParagraph.translated_paragraph;
         this.paragraphDisplay.appendChild(translationDiv);
         
-        // Show word explanations
-        if (translation.words && Array.isArray(translation.words) && translation.words.length > 0) {
-            const wordsDiv = document.createElement('div');
-            wordsDiv.className = 'translation-words';
+        // Show phrase explanations
+        if (this.currentParagraph.phrases && Array.isArray(this.currentParagraph.phrases) && this.currentParagraph.phrases.length > 0) {
+            const phrasesDiv = document.createElement('div');
+            phrasesDiv.className = 'translation-words';
             
-            const wordsTitle = document.createElement('h3');
-            wordsTitle.textContent = 'Word Explanations:';
-            wordsDiv.appendChild(wordsTitle);
+            const phrasesTitle = document.createElement('h3');
+            phrasesTitle.textContent = 'Phrase Explanations:';
+            phrasesDiv.appendChild(phrasesTitle);
             
-            translation.words.forEach(wordObj => {
-                const wordItem = document.createElement('div');
-                wordItem.className = 'word-explanation';
-                wordItem.innerHTML = `<strong>${wordObj.word}:</strong> ${wordObj.translation}`;
-                wordsDiv.appendChild(wordItem);
+            this.currentParagraph.phrases.forEach(phraseData => {
+                const phraseItem = document.createElement('div');
+                phraseItem.className = 'phrase-explanation';
+                phraseItem.innerHTML = `<strong>${phraseData.phrase}:</strong> ${phraseData.translation}`;
+                phrasesDiv.appendChild(phraseItem);
             });
             
-            this.paragraphDisplay.appendChild(wordsDiv);
+            this.paragraphDisplay.appendChild(phrasesDiv);
         }
-    }
-
-    toggleWord(word, element) {
-        if (this.isShowingTranslation) {
-            // Don't allow word toggling when showing translation
-            return;
-        }
-        
-        if (!word) return; // Skip if no actual word content
-        
-        if (this.clickedWords.has(word)) {
-            // Remove from clicked words
-            this.clickedWords.delete(word);
-            element.classList.remove('clicked');
-        } else {
-            // Add to clicked words
-            this.clickedWords.add(word);
-            element.classList.add('clicked');
-        }
-        
-        this.showMessage(`Clicked words: ${this.clickedWords.size}`, 'info');
     }
 
     async handleNext() {
@@ -202,20 +136,10 @@ class ParagraphReviewApp {
         this.nextBtn.disabled = true;
 
         try {
-            // Update the words array based on user interactions
-            await this.updateWordsArray();
+            // Simply mark the paragraph as reviewed (always successful since no word selection)
+            await this.paragraphsDB.updateReview(this.currentParagraph.id, true);
             
-            // Determine if review was successful (user clicked at least one word)
-            const wasSuccessful = this.clickedWords.size > 0;
-            
-            // Update the review information
-            await this.paragraphsDB.updateReview(this.currentParagraph.id, wasSuccessful);
-            
-            const message = wasSuccessful 
-                ? `Review completed successfully! (${this.clickedWords.size} words clicked)`
-                : 'Review completed (no words clicked)';
-            
-            this.showMessage(message, wasSuccessful ? 'success' : 'info');
+            this.showMessage('Review completed!', 'success');
             
             // Move to next paragraph
             setTimeout(() => {
@@ -230,43 +154,6 @@ class ParagraphReviewApp {
             this.nextBtn.classList.remove('loading');
             this.nextBtn.disabled = false;
         }
-    }
-
-    async updateWordsArray() {
-        // Get current words array
-        let currentWords = new Set(this.currentParagraph.words.map(word => word.toLowerCase()));
-        
-        // Get all words from the paragraph (for potential additions)
-        const allWordsInParagraph = new Set();
-        const tokens = this.currentParagraph.paragraph.match(/\S+/g) || [];
-        tokens.forEach(token => {
-            const cleanWord = token.replace(/[^\w\såäöÅÄÖ]/g, '').toLowerCase();
-            if (cleanWord) {
-                allWordsInParagraph.add(cleanWord);
-            }
-        });
-        
-        // Process clicked words (red words)
-        this.clickedWords.forEach(clickedWord => {
-            if (currentWords.has(clickedWord)) {
-                // Red word that was previously blue - remove it
-                currentWords.delete(clickedWord);
-            } else if (allWordsInParagraph.has(clickedWord)) {
-                // Red word that wasn't previously marked - add it
-                currentWords.add(clickedWord);
-            }
-        });
-        
-        // Update the paragraph with new words array
-        const updatedParagraph = {
-            ...this.currentParagraph,
-            words: Array.from(currentWords)
-        };
-        
-        await this.paragraphsDB.updateParagraph(this.currentParagraph.id, updatedParagraph);
-        
-        // Update local reference
-        this.currentParagraph.words = updatedParagraph.words;
     }
 
     showCompletion() {

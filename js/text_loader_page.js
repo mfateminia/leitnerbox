@@ -19,17 +19,19 @@ class ParagraphLearningApp {
         this.overviewModal = document.getElementById('overviewModal');
         this.closeOverviewModalBtn = document.getElementById('closeOverviewModalBtn');
         this.overviewCloseBtn = document.getElementById('overviewCloseBtn');
+        this.overviewSaveBtn = document.getElementById('overviewSaveBtn');
         this.overviewParagraph = document.getElementById('overviewParagraph');
         this.overviewTranslation = document.getElementById('overviewTranslation');
         this.overviewWords = document.getElementById('overviewWords');
         this.revealTranslationBtn = document.getElementById('revealTranslationBtn');
 
-        this.selectedWords = [];
-        this.originalText = '';
-        this.currentMode = 'input'; // 'input' or 'selection'
-
         this.paragraphsDB = new ParagraphsDB();
         this.geminiAI = new GeminiAI(this.getGeminiKey());
+        
+        // Pending data for overview modal
+        this.pendingParagraphData = null;
+        this.pendingAiResponse = null;
+        
         this.initializeEvents();
         this.loadWorkspaceFromStorage();
     }
@@ -56,6 +58,7 @@ class ParagraphLearningApp {
         // Overview modal events
         this.closeOverviewModalBtn.addEventListener('click', () => this.closeOverviewModal());
         this.overviewCloseBtn.addEventListener('click', () => this.closeOverviewModal());
+        this.overviewSaveBtn.addEventListener('click', () => this.saveToDatabase());
         this.revealTranslationBtn.addEventListener('click', () => this.revealTranslation());
         this.overviewModal.addEventListener('click', (e) => {
             if (e.target === this.overviewModal) {
@@ -204,25 +207,33 @@ class ParagraphLearningApp {
         // Store the translation for later reveal
         this.currentTranslation = aiResponse.translated_paragraph;
         
-        // Clear previous words
+        // Clear previous phrases
         this.overviewWords.innerHTML = '';
         
-        // Add word pairs
-        aiResponse.translated_words.forEach(wordData => {
-            const wordPair = document.createElement('div');
-            wordPair.className = 'word-pair';
+        // Add phrase pairs with remove functionality
+        aiResponse.phrases.forEach((phraseData, index) => {
+            const phrasePair = document.createElement('div');
+            phrasePair.className = 'word-pair removable';
+            phrasePair.dataset.phraseIndex = index;
             
-            const original = document.createElement('span');
-            original.className = 'word-original';
-            original.textContent = wordData.word;
+            const originalPhrase = document.createElement('span');
+            originalPhrase.className = 'word-original';
+            originalPhrase.textContent = phraseData.phrase;
             
-            const translation = document.createElement('span');
-            translation.className = 'word-translation';
-            translation.textContent = wordData.translation;
+            const translatedPhrase = document.createElement('span');
+            translatedPhrase.className = 'word-translation';
+            translatedPhrase.textContent = phraseData.translation;
             
-            wordPair.appendChild(original);
-            wordPair.appendChild(translation);
-            this.overviewWords.appendChild(wordPair);
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'remove-phrase-btn';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.title = 'Remove this phrase';
+            removeBtn.addEventListener('click', () => this.removePhrase(index));
+            
+            phrasePair.appendChild(originalPhrase);
+            phrasePair.appendChild(translatedPhrase);
+            phrasePair.appendChild(removeBtn);
+            this.overviewWords.appendChild(phrasePair);
         });
         
         // Show the modal
@@ -245,6 +256,55 @@ class ParagraphLearningApp {
     
     closeOverviewModal() {
         this.overviewModal.style.display = 'none';
+    }
+
+    removePhrase(phraseIndex) {
+        // Remove phrase from the data
+        this.pendingAiResponse.phrases.splice(phraseIndex, 1);
+        this.pendingParagraphData.phrases.splice(phraseIndex, 1);
+        
+        // Refresh the modal display
+        this.showOverviewModal(this.pendingParagraphData, this.pendingAiResponse);
+        
+        this.showMessage(`Phrase removed. ${this.pendingAiResponse.phrases.length} phrases remaining.`, 'info');
+    }
+
+    async saveToDatabase() {
+        if (!this.pendingParagraphData || !this.pendingAiResponse) {
+            this.showMessage('No data to save!', 'error');
+            return;
+        }
+
+        // Show loading state on the save button
+        const saveBtn = document.getElementById('overviewSaveBtn');
+        const originalText = saveBtn.textContent;
+        saveBtn.classList.add('loading');
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        try {
+            // Save to database
+            await this.paragraphsDB.addParagraph(this.pendingParagraphData);
+
+            this.showMessage(`Successfully saved paragraph with ${this.pendingParagraphData.phrases.length} phrases!`, 'success');
+
+            // Reset the workspace and close modal
+            this.resetWorkspace();
+            this.closeOverviewModal();
+            
+            // Clear pending data
+            this.pendingParagraphData = null;
+            this.pendingAiResponse = null;
+
+        } catch (error) {
+            console.error('Error saving to database:', error);
+            this.showMessage('Error saving to database: ' + error.message, 'error');
+        } finally {
+            // Remove loading state
+            saveBtn.classList.remove('loading');
+            saveBtn.disabled = false;
+            saveBtn.textContent = originalText;
+        }
     }
 
     autoResize() {
@@ -292,146 +352,59 @@ class ParagraphLearningApp {
     }
 
     async handleNext() {
-        if (this.currentMode === 'input') {
-            this.handleFirstNext();
-        } else {
-            await this.handleSaveToDatabase();
-        }
+        await this.handleSaveToDatabase();
     }
 
-    handleFirstNext() {
-        const text = this.textInput.value.trim();
 
-        if (!text) {
-            this.showMessage('Please enter some text first!', 'error');
-            return;
-        }
 
-        this.originalText = text;
-        this.currentMode = 'selection';
 
-        // Hide textarea and show text display
-        this.textInput.style.display = 'none';
-        this.textDisplay.style.display = 'block';
 
-        // Convert text to clickable words
-        this.createClickableWords(text);
 
-        // Change button text
-        this.nextBtn.textContent = 'Save';
-
-        this.showMessage('Click on words to select them. Click again to deselect.', 'info');
-    }
-
-    createClickableWords(text) {
-        // Split text into words while preserving punctuation and spaces
-        const tokens = text.match(/\S+|\s+/g) || [];
-
-        this.textDisplay.innerHTML = '';
-
-        tokens.forEach((token, index) => {
-            if (token.trim()) {
-                // It's a word
-                const wordSpan = document.createElement('span');
-                wordSpan.className = 'word';
-                wordSpan.textContent = token;
-                wordSpan.addEventListener('click', () => this.toggleWord(token, wordSpan));
-                this.textDisplay.appendChild(wordSpan);
-            } else {
-                // It's whitespace
-                const textNode = document.createTextNode(token);
-                this.textDisplay.appendChild(textNode);
-            }
-        });
-    }
-
-    toggleWord(word, element) {
-        // Remove only punctuation, preserve Swedish letters (å, ä, ö) and other letters
-        const originalWord = word.replace(/[^\w\såäöÅÄÖ]/g, '');
-        const cleanWordForComparison = originalWord.toLowerCase();
-
-        if (!cleanWordForComparison) return; // Skip if no actual word content
-
-        // Find if we already have this word (compare using cleaned version)
-        const existingIndex = this.selectedWords.findIndex(selectedWord =>
-            selectedWord.replace(/[^\w\såäöÅÄÖ]/g, '').toLowerCase() === cleanWordForComparison
-        );
-
-        if (existingIndex === -1) {
-            // Add the original word (with Swedish characters preserved)
-            this.selectedWords.push(originalWord);
-            element.classList.add('selected');
-        } else {
-            // Remove word
-            this.selectedWords.splice(existingIndex, 1);
-            element.classList.remove('selected');
-        }
-
-        console.log(`Selected word: "${originalWord}" (from "${word}")`);
-        this.showMessage(`Selected words: ${this.selectedWords.length}`, 'info');
-    }
 
     resetWorkspace() {
-        // Reset to input mode
-        this.currentMode = 'input';
-        this.selectedWords = [];
-        this.originalText = '';
-        this.textInput.style.display = 'block';
-        this.textDisplay.style.display = 'none';
         this.textInput.value = '';
-        this.nextBtn.textContent = 'Next';
         this.updateNextButtonState();
+        // Clear any pending data
+        this.pendingParagraphData = null;
+        this.pendingAiResponse = null;
     }
 
-    async getTranslationFromGemini(paragraph, words) {
-        const wordsString = words.join(', ');
+    async getTranslationFromGemini(paragraph) {
+        const prompt = `
+You are a swedish language learning assistant. Given the swedish paragraph below:
 
-        const prompt = `Input:
+Input paragraph: ${paragraph}
 
-paragraph: ${paragraph}
-words: ${wordsString}
-
-Output JSON format:
+respond with this output in JSON format:
 
 {
-"corrected_paragraph": "...",
-"selected_words": ["...", "...", ...],
-"translated_paragraph": "...",
-"translated_words": [
-{"word": "lemma form of the word...", "translation": "english translation of the lemma form..."},
+"corrected_paragraph": "If there is a grammar or spelling mistake in the paragraph, correct it. the corrected_paragraph must always contain the correct version.",
+"translated_paragraph": "provide the english translation of the entire paragraph here...",
+"phrases": [
+{"phrase": "important phrase or word", "translation": "english translation of the phrase or word..."},
 ...
 ]
 }
 
 Instructions:
-
-If there is a grammar or spelling mistake in the paragraph, correct it. the corrected_paragraph must always contain the correct version.
-
-If the user selected parts of a phrase as a word, correct it to the full phrase in both corrected_words and translated_words.
-
-Translate the paragraph to English.
-
-For each word, provide a short meaning and its base form.
+the "phrases" array should contain the most important words and/or phrases that are useful for language learners to study.
 
 Only return valid JSON, no extra text.
 
-Example Input:
+Example Input: Sverig är en vackert land med många sjöar och skogar. Det är känt för sin natur och sina midnattssol.
 
-paragraph: "Jag gick till affären och köpte en äpple, till och med fast jag inte var hungrig."
-words: ["affären", "köpte", "med"]
-
-Example Output:
-
+Example Output JSON format:
 {
-"corrected_paragraph": "Jag gick till affären och köpte ett äpple, till och med fast jag inte var hungrig.",
-"corrected_words": ["affären", "köpte", "till och med"],
-"translated_paragraph": "I went to the store and bought an apple, even though I wasn’t hungry",
-"translated_words": [
-{"word": "affär", "translation": "store"},
-{"word": "att köpa", "translation": "to buy"},
-{"word": "till och med", "translation": "'even' or 'even though'"}
+"corrected_paragraph": "Sverige är ett vackert land med många sjöar och skogar. Det är känt för sin natur och sin midnattssol.",
+"translated_paragraph": "Sweden is a beautiful country with many lakes and forests. It is known for its nature and its midnight sun.",
+"phrases": [
+{"phrase": "vackert land", "translation": "beautiful country"},
+{"phrase": "många sjöar", "translation": "many lakes"},
+{"phrase": "skogar", "translation": "forests"},
+{"phrase": "känt för sin natur", "translation": "known for its nature"},
+{"phrase": "midnattssol", "translation": "midnight sun"}
 ]
-}`;
+`;
 
         const response = await this.geminiAI.generateContent(prompt);
 
@@ -455,7 +428,7 @@ Example Output:
         // Validate response structure
         if (!parsedResponse.corrected_paragraph ||
              !parsedResponse.translated_paragraph ||
-              !Array.isArray(parsedResponse.translated_words)) {
+              !Array.isArray(parsedResponse.phrases)) {
             throw new Error('Invalid response structure from Gemini API');
         }
 
@@ -463,8 +436,10 @@ Example Output:
     }
 
     async handleSaveToDatabase() {
-        if (this.selectedWords.length === 0) {
-            this.showMessage('Please select at least one word!', 'error');
+        const text = this.textInput.value.trim();
+
+        if (!text) {
+            this.showMessage('Please enter some text first!', 'error');
             return;
         }
 
@@ -475,26 +450,24 @@ Example Output:
 
         try {
             // Get translation from Gemini AI
-            const uniqueWords = [...new Set(this.selectedWords)];
-            const aiResponse = await this.getTranslationFromGemini(this.originalText, uniqueWords);
-            const { corrected_paragraph, ...translationObject } = aiResponse;
+            const aiResponse = await this.getTranslationFromGemini(text);
             console.log('Gemini AI response:', aiResponse);
+            
             const paragraphData = {
-                paragraph: corrected_paragraph,
-                translation: translationObject,
-                words: uniqueWords
+                paragraph: aiResponse.corrected_paragraph,
+                translated_paragraph: aiResponse.translated_paragraph,
+                phrases: aiResponse.phrases
             };
 
-            this.nextBtn.textContent = 'Saving to database...';
-            await this.paragraphsDB.addParagraph(paragraphData);
+            // Store data for later saving
+            this.pendingParagraphData = paragraphData;
+            this.pendingAiResponse = aiResponse;
 
-            this.showMessage(`Successfully saved with translation! Selected ${this.selectedWords.length} words.`, 'success');
+            this.showMessage(`Translation complete! Found ${aiResponse.phrases.length} phrases. Review and save below.`, 'success');
 
-            // Show overview modal with the saved data
+            // Show overview modal without saving to database yet
             this.showOverviewModal(paragraphData, aiResponse);
 
-            // Reset the workspace immediately
-            this.resetWorkspace();
             this.nextBtn.textContent = 'Next';
 
         } catch (error) {

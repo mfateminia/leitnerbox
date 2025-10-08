@@ -22,12 +22,10 @@ class ParagraphsDB {
      * Add a new paragraph to the database
      * @param {Object} paragraphData - The paragraph object
      * @param {string} paragraphData.paragraph - The original paragraph text
-     * @param {Object} paragraphData.translation - The translation object
-     * @param {string} paragraphData.translation.translated_paragraph - The full translation of the paragraph
-     * @param {Object[]} paragraphData.translation.translated_words - Array of word translation objects
-     * @param {string} paragraphData.translation.translated_words[].word - The word itself
-     * @param {string} paragraphData.translation.translated_words[].translation - The detailed translation of the word
-     * @param {string[]} paragraphData.words - Array of words from the paragraph
+     * @param {string} paragraphData.translated_paragraph - The full translation of the paragraph
+     * @param {Object[]} paragraphData.phrases - Array of phrase translation objects
+     * @param {string} paragraphData.phrases[].phrase - The phrase itself
+     * @param {string} paragraphData.phrases[].translation - The translation of the phrase
      * @param {Date|null} paragraphData.last_reviewed_at - Last review date (optional, defaults to null)
      * @param {number} paragraphData.count_of_successful_reviews - Number of successful reviews (optional, defaults to 0)
      * @param {boolean} paragraphData.is_excluded - Whether the paragraph is excluded (optional, defaults to false)
@@ -38,32 +36,26 @@ class ParagraphsDB {
         
         // Validate required fields
         if (!paragraphData.paragraph || 
-            !paragraphData.translation || 
-            typeof paragraphData.translation !== 'object' ||
-            !paragraphData.translation.translated_paragraph ||
-            !Array.isArray(paragraphData.translation.translated_words) ||
-            !Array.isArray(paragraphData.words)) {
-            throw new Error('Missing required fields: paragraph, translation (with text and words), and words are required');
+            !paragraphData.translated_paragraph ||
+            !Array.isArray(paragraphData.phrases)) {
+            throw new Error('Missing required fields: paragraph, translated_paragraph, and phrases are required');
         }
 
-        // Validate translation words structure
-        for (const wordObj of paragraphData.translation.translated_words) {
-            if (!wordObj.word || !wordObj.translation) {
-                throw new Error('Each translation word must have "word" and "translation" properties');
+        // Validate phrases structure
+        for (const phraseObj of paragraphData.phrases) {
+            if (!phraseObj.phrase || !phraseObj.translation) {
+                throw new Error('Each phrase must have "phrase" and "translation" properties');
             }
         }
 
         // Create paragraph object with defaults
         const paragraph = {
             paragraph: paragraphData.paragraph,
-            translation: {
-                text: paragraphData.translation.translated_paragraph,
-                words: paragraphData.translation.translated_words.map(wordObj => ({
-                    word: wordObj.word,
-                    translation: wordObj.translation
-                }))
-            },
-            words: paragraphData.words,
+            translated_paragraph: paragraphData.translated_paragraph,
+            phrases: paragraphData.phrases.map(phraseObj => ({
+                phrase: phraseObj.phrase,
+                translation: phraseObj.translation
+            })),
             last_reviewed_at: paragraphData.last_reviewed_at || null,
             count_of_successful_reviews: paragraphData.count_of_successful_reviews || 0,
             is_excluded: paragraphData.is_excluded || false,
@@ -73,22 +65,22 @@ class ParagraphsDB {
 
         const paragraphId = await this.dbWrapper.write(paragraph)
 
-        // Add translated words to the word database
-        for (const wordObj of paragraphData.translation.translated_words) {
+        // Add phrases to the word database for individual review
+        for (const phraseObj of paragraphData.phrases) {
             try {
                 await this.wordDB.addWord({
-                    word: wordObj.word,
-                    translation: wordObj.translation,
+                    word: phraseObj.phrase,
+                    translation: phraseObj.translation,
                     paragraphId
                 });
-                console.log(`Added word "${wordObj.word}" to word database`);
+                console.log(`Added phrase "${phraseObj.phrase}" to word database`);
             } catch (error) {
-                // If word already exists, that's fine - just skip it
+                // If phrase already exists, that's fine - just skip it
                 if (error.message.includes('already exists')) {
-                    console.log(`Word "${wordObj.word}" already exists in word database - skipping`);
+                    console.log(`Phrase "${phraseObj.phrase}" already exists in word database - skipping`);
                 } else {
-                    console.error(`Error adding word "${wordObj.word}" to word database:`, error);
-                    // Don't throw here - we still want to save the paragraph even if word addition fails
+                    console.error(`Error adding phrase "${phraseObj.phrase}" to word database:`, error);
+                    // Don't throw here - we still want to save the paragraph even if phrase addition fails
                 }
             }
         }
