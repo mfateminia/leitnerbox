@@ -7,7 +7,8 @@ class WordReviewApp {
         this.matches = new Map(); // wordId -> translationElement
         this.correctMatches = 0;
         this.totalAttempts = 0;
-        this.selectedWordForTouch = null; // For mobile touch interactions
+        this.selectedWord = null; // Currently selected word
+        this.selectedTranslation = null; // Currently selected translation
         
         this.initializeElements();
         this.loadStatistics();
@@ -119,49 +120,10 @@ class WordReviewApp {
         const element = document.createElement('div');
         element.className = 'word-item';
         element.textContent = word.word;
-        element.draggable = true;
         element.dataset.wordId = word.id;
         
-        // Desktop drag and drop
-        element.addEventListener('dragstart', (e) => {
-            e.dataTransfer.setData('text/plain', word.id);
-            element.classList.add('dragging');
-        });
-        
-        element.addEventListener('dragend', () => {
-            element.classList.remove('dragging');
-        });
-
-        // Mobile touch support
-        let selectedWord = null;
-        
-        element.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (selectedWord) {
-                selectedWord.classList.remove('selected');
-            }
-            selectedWord = element;
-            element.classList.add('selected');
-            
-            // Store selected word for touch drop
-            this.selectedWordForTouch = word.id;
-        });
-
         element.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768) { // Mobile/tablet
-                e.preventDefault();
-                if (selectedWord) {
-                    selectedWord.classList.remove('selected');
-                }
-                selectedWord = element;
-                element.classList.add('selected');
-                this.selectedWordForTouch = word.id;
-                
-                // Show visual feedback
-                document.querySelectorAll('.translation-item').forEach(trans => {
-                    trans.classList.add('touch-target');
-                });
-            }
+            this.selectWord(element, word);
         });
         
         return element;
@@ -173,45 +135,62 @@ class WordReviewApp {
         element.textContent = word.translation;
         element.dataset.wordId = word.id;
         
-        // Desktop drag and drop
-        element.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            element.classList.add('drag-over');
-        });
-        
-        element.addEventListener('dragleave', () => {
-            element.classList.remove('drag-over');
-        });
-        
-        element.addEventListener('drop', (e) => {
-            e.preventDefault();
-            element.classList.remove('drag-over');
-            
-            const draggedWordId = e.dataTransfer.getData('text/plain');
-            this.handleDrop(draggedWordId, element);
-        });
-
-        // Mobile touch support
-        element.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (this.selectedWordForTouch) {
-                this.handleDrop(this.selectedWordForTouch, element);
-                this.clearTouchSelection();
-            }
-        });
-
         element.addEventListener('click', (e) => {
-            if (window.innerWidth <= 768 && this.selectedWordForTouch) { // Mobile/tablet
-                e.preventDefault();
-                this.handleDrop(this.selectedWordForTouch, element);
-                this.clearTouchSelection();
-            }
+            this.selectTranslation(element, word);
         });
         
         return element;
     }
 
-    async handleDrop(draggedWordId, translationElement) {
+    selectWord(element, word) {
+        // Clear previous word selection
+        if (this.selectedWord) {
+            this.selectedWord.classList.remove('selected');
+        }
+        
+        // Select new word
+        this.selectedWord = element;
+        element.classList.add('selected');
+        
+        // Store word data
+        this.selectedWordData = word;
+        
+        // Check if we can make a match
+        this.checkForMatch();
+    }
+
+    selectTranslation(element, word) {
+        // Clear previous translation selection
+        if (this.selectedTranslation) {
+            this.selectedTranslation.classList.remove('selected');
+        }
+        
+        // Select new translation
+        this.selectedTranslation = element;
+        element.classList.add('selected');
+        
+        // Store translation data
+        this.selectedTranslationData = word;
+        
+        // Check if we can make a match
+        this.checkForMatch();
+    }
+
+    checkForMatch() {
+        // If both word and translation are selected, create a match
+        if (this.selectedWord && this.selectedTranslation) {
+            this.createMatch(this.selectedWordData.id, this.selectedTranslation);
+            
+            // Clear selections
+            this.selectedWord.classList.remove('selected');
+            this.selectedTranslation.classList.remove('selected');
+            this.selectedWord = null;
+            this.selectedTranslation = null;
+            this.selectedWordData = null;
+            this.selectedTranslationData = null;
+        }
+    }
+    async createMatch(draggedWordId, translationElement) {
         // Remove previous match if exists
         const existingMatch = this.matches.get(draggedWordId);
         if (existingMatch) {
@@ -240,7 +219,10 @@ class WordReviewApp {
         }
         
         // Immediately check if match is correct and save to database
-        const isCorrect = translationElement.dataset.wordId === draggedWordId;
+        const wordIdStr = draggedWordId.toString();
+        const translationIdStr = translationElement.dataset.wordId;
+        const isCorrect = translationIdStr === wordIdStr;
+        
         try {
             await this.wordDB.updateReview(parseInt(draggedWordId), isCorrect);
             
@@ -281,23 +263,24 @@ class WordReviewApp {
         this.elements.correctMatches.textContent = '0';
         this.elements.resultMessage.style.display = 'none';
         this.elements.finishReviewBtn.style.display = 'none';
-        this.clearTouchSelection();
+        this.clearSelections();
         
         // Reset all styling and matches
         document.querySelectorAll('.word-item, .translation-item').forEach(el => {
-            el.classList.remove('matched', 'incorrect', 'correct', 'selected', 'touch-target');
+            el.classList.remove('matched', 'incorrect', 'correct', 'selected');
         });
         
         this.updateProgress();
     }
 
-    clearTouchSelection() {
-        this.selectedWordForTouch = null;
-        document.querySelectorAll('.word-item').forEach(word => {
-            word.classList.remove('selected');
-        });
-        document.querySelectorAll('.translation-item').forEach(trans => {
-            trans.classList.remove('touch-target');
+    clearSelections() {
+        this.selectedWord = null;
+        this.selectedTranslation = null;
+        this.selectedWordData = null;
+        this.selectedTranslationData = null;
+        
+        document.querySelectorAll('.word-item, .translation-item').forEach(item => {
+            item.classList.remove('selected');
         });
     }
 

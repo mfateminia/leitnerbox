@@ -108,24 +108,23 @@ class ParagraphReviewApp {
         translationDiv.className = 'translation-text';
         translationDiv.innerHTML = this.currentParagraph.translated_paragraph;
         this.paragraphDisplay.appendChild(translationDiv);
-        
-        // Show phrase explanations
-        if (this.currentParagraph.phrases && Array.isArray(this.currentParagraph.phrases) && this.currentParagraph.phrases.length > 0) {
-            const phrasesDiv = document.createElement('div');
-            phrasesDiv.className = 'translation-words';
-            
-            const phrasesTitle = document.createElement('h3');
-            phrasesTitle.textContent = 'Phrase Explanations:';
-            phrasesDiv.appendChild(phrasesTitle);
-            
-            this.currentParagraph.phrases.forEach(phraseData => {
-                const phraseItem = document.createElement('div');
-                phraseItem.className = 'phrase-explanation';
-                phraseItem.innerHTML = `<strong>${phraseData.phrase}:</strong> ${phraseData.translation}`;
-                phrasesDiv.appendChild(phraseItem);
+        // Show expression explanations
+        if (this.currentParagraph.expressions && Array.isArray(this.currentParagraph.expressions) && this.currentParagraph.expressions.length > 0) {
+            const expressionsDiv = document.createElement('div');
+            expressionsDiv.className = 'translation-words';
+
+            const expressionsTitle = document.createElement('h3');
+            expressionsTitle.textContent = 'Expression Explanations:';
+            expressionsDiv.appendChild(expressionsTitle);
+
+            this.currentParagraph.expressions.forEach(expressionData => {
+                const expressionItem = document.createElement('div');
+                expressionItem.className = 'phrase-explanation';
+                expressionItem.innerHTML = `<strong>${expressionData.expression}:</strong> ${expressionData.translation}`;
+                expressionsDiv.appendChild(expressionItem);
             });
-            
-            this.paragraphDisplay.appendChild(phrasesDiv);
+
+            this.paragraphDisplay.appendChild(expressionsDiv);
         }
     }
 

@@ -78,7 +78,7 @@
     border-radius: 8px;
     padding: 12px;
     margin-bottom: 8px;
-    cursor: grab;
+    cursor: pointer;
     transition: all 0.3s ease;
     user-select: none;
     min-height: 45px;
@@ -88,22 +88,19 @@
     text-align: center;
     font-size: 16px;
     line-height: 1.2;
-    touch-action: none;
 }
 
 .word-item:hover, .translation-item:hover {
     border-color: #3498db;
     box-shadow: 0 2px 8px rgba(52, 152, 219, 0.2);
+    transform: translateY(-1px);
 }
 
-.word-item.dragging {
-    opacity: 0.5;
-    transform: rotate(5deg);
-}
-
-.translation-item.drag-over {
-    border-color: #2ecc71;
-    background-color: #e8f8f5;
+.word-item.selected, .translation-item.selected {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    box-shadow: 0 2px 12px rgba(33, 150, 243, 0.3);
+    transform: scale(1.02);
 }
 
 .word-item.matched, .translation-item.matched {
@@ -124,16 +121,10 @@
     animation: shake 0.5s ease-in-out;
 }
 
-.word-item.selected {
-    background-color: #e3f2fd;
-    border-color: #2196f3;
-    box-shadow: 0 2px 12px rgba(33, 150, 243, 0.3);
-}
-
-.translation-item.touch-target {
-    border-color: #ff9800;
-    background-color: #fff3e0;
-    animation: pulse 1.5s infinite;
+/* Active click state */
+.word-item:active, .translation-item:active {
+    transform: scale(0.98);
+    opacity: 0.9;
 }
 
 /* Base animations are now handled by global.css */

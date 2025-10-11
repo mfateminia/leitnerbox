@@ -29,8 +29,7 @@ class ParagraphLearningApp {
         this.geminiAI = new GeminiAI(this.getGeminiKey());
         
         // Pending data for overview modal
-        this.pendingParagraphData = null;
-        this.pendingAiResponse = null;
+        this.paragraphData = null;
         
         this.initializeEvents();
         this.loadWorkspaceFromStorage();
@@ -194,7 +193,7 @@ class ParagraphLearningApp {
     }
 
     // Overview modal methods
-    showOverviewModal(paragraphData, aiResponse) {
+    showOverviewModal(paragraphData) {
         // Populate the modal with data
         this.overviewParagraph.textContent = paragraphData.paragraph;
         
@@ -205,35 +204,35 @@ class ParagraphLearningApp {
         this.revealTranslationBtn.textContent = 'Reveal';
         
         // Store the translation for later reveal
-        this.currentTranslation = aiResponse.translated_paragraph;
+        this.currentTranslation = paragraphData.translated_paragraph;
         
-        // Clear previous phrases
+        // Clear previous expressions
         this.overviewWords.innerHTML = '';
         
-        // Add phrase pairs with remove functionality
-        aiResponse.phrases.forEach((phraseData, index) => {
-            const phrasePair = document.createElement('div');
-            phrasePair.className = 'word-pair removable';
-            phrasePair.dataset.phraseIndex = index;
+        // Add expression pairs with remove functionality
+        paragraphData.expressions.forEach((expressionObj, index) => {
+            const expressionPair = document.createElement('div');
+            expressionPair.className = 'word-pair removable';
+            expressionPair.dataset.expressionIndex = index;
             
-            const originalPhrase = document.createElement('span');
-            originalPhrase.className = 'word-original';
-            originalPhrase.textContent = phraseData.phrase;
+            const originalExpression = document.createElement('span');
+            originalExpression.className = 'word-original';
+            originalExpression.textContent = expressionObj.expression;
             
-            const translatedPhrase = document.createElement('span');
-            translatedPhrase.className = 'word-translation';
-            translatedPhrase.textContent = phraseData.translation;
+            const translatedExpression = document.createElement('span');
+            translatedExpression.className = 'word-translation';
+            translatedExpression.textContent = expressionObj.translation;
             
             const removeBtn = document.createElement('button');
             removeBtn.className = 'remove-phrase-btn';
             removeBtn.innerHTML = '&times;';
             removeBtn.title = 'Remove this phrase';
-            removeBtn.addEventListener('click', () => this.removePhrase(index));
+            removeBtn.addEventListener('click', () => this.removeExpression(index));
             
-            phrasePair.appendChild(originalPhrase);
-            phrasePair.appendChild(translatedPhrase);
-            phrasePair.appendChild(removeBtn);
-            this.overviewWords.appendChild(phrasePair);
+            expressionPair.appendChild(originalExpression);
+            expressionPair.appendChild(translatedExpression);
+            expressionPair.appendChild(removeBtn);
+            this.overviewWords.appendChild(expressionPair);
         });
         
         // Show the modal
@@ -258,19 +257,18 @@ class ParagraphLearningApp {
         this.overviewModal.style.display = 'none';
     }
 
-    removePhrase(phraseIndex) {
-        // Remove phrase from the data
-        this.pendingAiResponse.phrases.splice(phraseIndex, 1);
-        this.pendingParagraphData.phrases.splice(phraseIndex, 1);
+    removeExpression(expressionIndex) {
+        // Remove expression from the data
+        this.paragraphData.expressions.splice(expressionIndex, 1);
         
         // Refresh the modal display
-        this.showOverviewModal(this.pendingParagraphData, this.pendingAiResponse);
-        
-        this.showMessage(`Phrase removed. ${this.pendingAiResponse.phrases.length} phrases remaining.`, 'info');
+        this.showOverviewModal(this.paragraphData);
+
+        this.showMessage(`Expression removed. ${this.paragraphData.expressions.length} expressions remaining.`, 'info');
     }
 
     async saveToDatabase() {
-        if (!this.pendingParagraphData || !this.pendingAiResponse) {
+        if (!this.paragraphData) {
             this.showMessage('No data to save!', 'error');
             return;
         }
@@ -284,17 +282,16 @@ class ParagraphLearningApp {
 
         try {
             // Save to database
-            await this.paragraphsDB.addParagraph(this.pendingParagraphData);
+            await this.paragraphsDB.addParagraph(this.paragraphData);
 
-            this.showMessage(`Successfully saved paragraph with ${this.pendingParagraphData.phrases.length} phrases!`, 'success');
+            this.showMessage(`Successfully saved paragraph with ${this.paragraphData.expressions.length} expressions!`, 'success');
 
             // Reset the workspace and close modal
             this.resetWorkspace();
             this.closeOverviewModal();
             
             // Clear pending data
-            this.pendingParagraphData = null;
-            this.pendingAiResponse = null;
+            this.paragraphData = null;
 
         } catch (error) {
             console.error('Error saving to database:', error);
@@ -352,24 +349,17 @@ class ParagraphLearningApp {
     }
 
     async handleNext() {
-        await this.handleSaveToDatabase();
+        await this.handleNext();
     }
-
-
-
-
-
-
 
     resetWorkspace() {
         this.textInput.value = '';
         this.updateNextButtonState();
         // Clear any pending data
-        this.pendingParagraphData = null;
-        this.pendingAiResponse = null;
+        this.paragraphData = null;
     }
 
-    async getTranslationFromGemini(paragraph) {
+    async getParagraphAnalysis(paragraph) {
         const prompt = `
 You are a swedish language learning assistant. Given the swedish paragraph below:
 
@@ -381,13 +371,19 @@ respond with this output in JSON format:
 "corrected_paragraph": "If there is a grammar or spelling mistake in the paragraph, correct it. the corrected_paragraph must always contain the correct version.",
 "translated_paragraph": "provide the english translation of the entire paragraph here...",
 "phrases": [
-{"phrase": "important phrase or word", "translation": "english translation of the phrase or word..."},
+{"phrase": "base form of important phrase", "translation": "english translation of the base form of the phrase..."},
+...
+],
+"words": [
+{"word": "base form of important word", "translation": "english translation of the base form of the word..."},
 ...
 ]
 }
 
 Instructions:
-the "phrases" array should contain the most important words and/or phrases that are useful for language learners to study.
+the "phrases" array should contain the most important phrases that are useful for language learners to study.
+
+the "words" array should contain the most important words that are useful for language learners to study.
 
 Only return valid JSON, no extra text.
 
@@ -397,12 +393,13 @@ Example Output JSON format:
 {
 "corrected_paragraph": "Sverige är ett vackert land med många sjöar och skogar. Det är känt för sin natur och sin midnattssol.",
 "translated_paragraph": "Sweden is a beautiful country with many lakes and forests. It is known for its nature and its midnight sun.",
+"words": [
+{"word": "sjö", "translation": "lake"},
+{"word": "skog", "translation": "forest"},
+{"word": "midnattssol", "translation": "midnight sun"}
+],
 "phrases": [
-{"phrase": "vackert land", "translation": "beautiful country"},
-{"phrase": "många sjöar", "translation": "many lakes"},
-{"phrase": "skogar", "translation": "forests"},
-{"phrase": "känt för sin natur", "translation": "known for its nature"},
-{"phrase": "midnattssol", "translation": "midnight sun"}
+{"phrase": "att vara känt för sin natur", "translation": "to be known for its nature"},
 ]
 `;
 
@@ -428,14 +425,18 @@ Example Output JSON format:
         // Validate response structure
         if (!parsedResponse.corrected_paragraph ||
              !parsedResponse.translated_paragraph ||
-              !Array.isArray(parsedResponse.phrases)) {
+              !Array.isArray(parsedResponse.phrases) ||
+                !Array.isArray(parsedResponse.words)) {
             throw new Error('Invalid response structure from Gemini API');
         }
+
+        parsedResponse.expressions = [...parsedResponse.phrases.map(p => ({ expression: p.phrase, translation: p.translation})),
+                     ...parsedResponse.words.map(w => ({ expression: w.word, translation: w.translation}))];
 
         return parsedResponse;
     }
 
-    async handleSaveToDatabase() {
+    async handleNext() {
         const text = this.textInput.value.trim();
 
         if (!text) {
@@ -450,23 +451,22 @@ Example Output JSON format:
 
         try {
             // Get translation from Gemini AI
-            const aiResponse = await this.getTranslationFromGemini(text);
+            const aiResponse = await this.getParagraphAnalysis(text);
             console.log('Gemini AI response:', aiResponse);
             
             const paragraphData = {
                 paragraph: aiResponse.corrected_paragraph,
                 translated_paragraph: aiResponse.translated_paragraph,
-                phrases: aiResponse.phrases
+                expressions: aiResponse.expressions
             };
 
             // Store data for later saving
-            this.pendingParagraphData = paragraphData;
-            this.pendingAiResponse = aiResponse;
+            this.paragraphData = paragraphData;
 
-            this.showMessage(`Translation complete! Found ${aiResponse.phrases.length} phrases. Review and save below.`, 'success');
+            this.showMessage(`Translation complete! Found ${paragraphData.expressions.length} expressions. Review and save below.`, 'success');
 
             // Show overview modal without saving to database yet
-            this.showOverviewModal(paragraphData, aiResponse);
+            this.showOverviewModal(paragraphData);
 
             this.nextBtn.textContent = 'Next';
 

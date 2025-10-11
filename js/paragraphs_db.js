@@ -23,9 +23,9 @@ class ParagraphsDB {
      * @param {Object} paragraphData - The paragraph object
      * @param {string} paragraphData.paragraph - The original paragraph text
      * @param {string} paragraphData.translated_paragraph - The full translation of the paragraph
-     * @param {Object[]} paragraphData.phrases - Array of phrase translation objects
-     * @param {string} paragraphData.phrases[].phrase - The phrase itself
-     * @param {string} paragraphData.phrases[].translation - The translation of the phrase
+     * @param {Object[]} paragraphData.expressions - Array of expression objects
+     * @param {string} paragraphData.expressions[].expression - The expression itself
+     * @param {string} paragraphData.expressions[].translation - The translation of the expression
      * @param {Date|null} paragraphData.last_reviewed_at - Last review date (optional, defaults to null)
      * @param {number} paragraphData.count_of_successful_reviews - Number of successful reviews (optional, defaults to 0)
      * @param {boolean} paragraphData.is_excluded - Whether the paragraph is excluded (optional, defaults to false)
@@ -37,14 +37,14 @@ class ParagraphsDB {
         // Validate required fields
         if (!paragraphData.paragraph || 
             !paragraphData.translated_paragraph ||
-            !Array.isArray(paragraphData.phrases)) {
-            throw new Error('Missing required fields: paragraph, translated_paragraph, and phrases are required');
+            !Array.isArray(paragraphData.expressions)) {
+            throw new Error('Missing required fields: paragraph, translated_paragraph, and expressions are required');
         }
 
-        // Validate phrases structure
-        for (const phraseObj of paragraphData.phrases) {
-            if (!phraseObj.phrase || !phraseObj.translation) {
-                throw new Error('Each phrase must have "phrase" and "translation" properties');
+        // Validate expressions structure
+        for (const expressionObj of paragraphData.expressions) {
+            if (!expressionObj.expression || !expressionObj.translation) {
+                throw new Error('Each expression must have "expression" and "translation" properties');
             }
         }
 
@@ -52,10 +52,7 @@ class ParagraphsDB {
         const paragraph = {
             paragraph: paragraphData.paragraph,
             translated_paragraph: paragraphData.translated_paragraph,
-            phrases: paragraphData.phrases.map(phraseObj => ({
-                phrase: phraseObj.phrase,
-                translation: phraseObj.translation
-            })),
+            expressions: paragraphData.expressions,
             last_reviewed_at: paragraphData.last_reviewed_at || null,
             count_of_successful_reviews: paragraphData.count_of_successful_reviews || 0,
             is_excluded: paragraphData.is_excluded || false,
@@ -65,22 +62,22 @@ class ParagraphsDB {
 
         const paragraphId = await this.dbWrapper.write(paragraph)
 
-        // Add phrases to the word database for individual review
-        for (const phraseObj of paragraphData.phrases) {
+        // Add expressions to the word database for individual review
+        for (const expressionObj of paragraphData.expressions) {
             try {
                 await this.wordDB.addWord({
-                    word: phraseObj.phrase,
-                    translation: phraseObj.translation,
+                    word: expressionObj.expression,
+                    translation: expressionObj.translation,
                     paragraphId
                 });
-                console.log(`Added phrase "${phraseObj.phrase}" to word database`);
+                console.log(`Added expression "${expressionObj.expression}" to word database`);
             } catch (error) {
-                // If phrase already exists, that's fine - just skip it
+                // If expression already exists, that's fine - just skip it
                 if (error.message.includes('already exists')) {
-                    console.log(`Phrase "${phraseObj.phrase}" already exists in word database - skipping`);
+                    console.log(`Expression "${expressionObj.expression}" already exists in word database - skipping`);
                 } else {
-                    console.error(`Error adding phrase "${phraseObj.phrase}" to word database:`, error);
-                    // Don't throw here - we still want to save the paragraph even if phrase addition fails
+                    console.error(`Error adding expression "${expressionObj.expression}" to word database:`, error);
+                    // Don't throw here - we still want to save the paragraph even if expression addition fails
                 }
             }
         }
@@ -268,17 +265,3 @@ class ParagraphsDB {
         });
     }
 }
-
-// Usage example:
-// const paragraphsDB = new ParagraphsDB();
-// await paragraphsDB.addParagraph({
-//     paragraph: "Jag gick till affären och köpte ett äpple.",
-//     translation: {
-//         text: "I went to the store and bought an apple.",
-//         words: [
-//             { word: "affären", translation: "means 'the store', lemma 'affär'" },
-//             { word: "köpte", translation: "means 'bought', lemma 'köpa'" }
-//         ]
-//     },
-//     words: ["affären", "köpte"]
-// });
