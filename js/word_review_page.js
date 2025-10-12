@@ -19,6 +19,8 @@ class WordReviewApp {
         this.availableLetters = [];
         this.mistakes = 0;
         this.hintsUsed = 0;
+        this.startTime = null; // When letter exercise started
+        this.userWordHistory = []; // History for undo functionality
         
         this.initializeElements();
         this.setupEventListeners();
@@ -32,6 +34,9 @@ class WordReviewApp {
         }
         if (this.elements.clearWordBtn) {
             this.elements.clearWordBtn.addEventListener('click', () => this.clearUserWord());
+        }
+        if (this.elements.undoBtn) {
+            this.elements.undoBtn.addEventListener('click', () => this.undoLastLetter());
         }
     }
 
@@ -58,6 +63,7 @@ class WordReviewApp {
             userWordDisplay: document.getElementById('userWordDisplay'),
             hintBtn: document.getElementById('hintBtn'),
             clearWordBtn: document.getElementById('clearWordBtn'),
+            undoBtn: document.getElementById('undoBtn'),
             letterProgress: document.getElementById('letterProgress'),
             letterResultMessage: document.getElementById('letterResultMessage')
         };
@@ -326,6 +332,7 @@ class WordReviewApp {
         this.userWord = '';
         this.mistakes = 0;
         this.hintsUsed = 0;
+        this.userWordHistory = [];
         
         //this.elements.correctMatches.textContent = '0';
         this.elements.resultMessage.style.display = 'none';
@@ -397,6 +404,10 @@ class WordReviewApp {
         this.elements.letterExerciseArea.style.display = 'block';
         this.elements.resultMessage.style.display = 'none';
         
+        // Reset history and start timing
+        this.userWordHistory = [];
+        this.startTime = Date.now();
+        
         // Display translation
         this.elements.translationDisplay.textContent = `English: "${this.currentLetterWord.translation}"`;
         
@@ -428,6 +439,13 @@ class WordReviewApp {
 
     selectLetter(index) {
         const letter = this.availableLetters[index];
+        
+        // Save current state for undo
+        this.userWordHistory.push({
+            userWord: this.userWord,
+            availableLetters: [...this.availableLetters]
+        });
+        
         this.userWord += letter;
         
         // Remove letter from available letters
@@ -455,6 +473,12 @@ class WordReviewApp {
     }
 
     evaluateLetterArrangement() {
+        // Calculate time taken
+        const endTime = Date.now();
+        const timeTaken = endTime - this.startTime;
+        const expectedTime = this.currentLetterWord.word.length * 2500; // 2.5s per letter
+        const tookTooLong = timeTaken > expectedTime;
+        
         const correctWord = this.currentLetterWord.word;
         const maxMistakes = Math.floor(correctWord.length * 0.25);
         const maxHints = Math.floor(correctWord.length * 0.25);
@@ -462,7 +486,8 @@ class WordReviewApp {
         // Calculate mistakes (Levenshtein distance-like approach)
         this.mistakes = this.calculateMistakes(correctWord, this.userWord);
         
-        const isCorrect = this.mistakes <= maxMistakes && this.hintsUsed <= maxHints;
+        // Word is correct if: mistakes within limit, hints within limit, AND time within limit
+        const isCorrect = this.mistakes <= maxMistakes && this.hintsUsed <= maxHints && !tookTooLong;
         const hasMistakes = this.mistakes > 0;
         
         if (isCorrect) {
@@ -476,7 +501,13 @@ class WordReviewApp {
                 this.elements.letterResultMessage.className = 'result-message result-success';
             }
         } else {
-            this.elements.letterResultMessage.textContent = `Incorrect. Correct word: "${correctWord}" ❌`;
+            let reason = 'Incorrect.';
+            if (tookTooLong) {
+                const seconds = Math.round(timeTaken / 1000);
+                const expectedSeconds = Math.round(expectedTime / 1000);
+                reason = `Too slow (${seconds}s, expected ≤${expectedSeconds}s).`;
+            }
+            this.elements.letterResultMessage.textContent = `${reason} Correct word: "${correctWord}" ❌`;
             this.elements.letterResultMessage.className = 'result-message result-incomplete';
         }
         
@@ -496,8 +527,8 @@ class WordReviewApp {
             // Don't increment currentLetterIndex - we'll retry the same position with next word
         }
         
-        // Longer pause for words with mistakes so user can see the correct word
-        const pauseDuration = hasMistakes || !isCorrect ? 5000 : 2000;
+        // Longer pause for words with mistakes or time issues so user can see the correct word
+        const pauseDuration = (hasMistakes || !isCorrect || tookTooLong) ? 5000 : 2000;
         
         // Continue to next word or retry
         setTimeout(() => {
@@ -526,6 +557,20 @@ class WordReviewApp {
         }
     }
 
+    undoLastLetter() {
+        if (this.userWordHistory.length === 0) {
+            return; // Nothing to undo
+        }
+        
+        // Restore previous state
+        const lastState = this.userWordHistory.pop();
+        this.userWord = lastState.userWord;
+        this.availableLetters = lastState.availableLetters;
+        
+        this.renderLetters();
+        this.updateUserWordDisplay();
+    }
+
     giveHint() {
         if (this.hintsUsed >= Math.floor(this.currentLetterWord.word.length * 0.25)) {
             alert('Maximum hints used!');
@@ -547,6 +592,7 @@ class WordReviewApp {
         // Return all letters to available pool
         this.availableLetters = [...this.currentLetterWord.word.split('')].sort(() => Math.random() - 0.5);
         this.userWord = '';
+        this.userWordHistory = []; // Clear undo history
         this.renderLetters();
         this.updateUserWordDisplay();
     }
