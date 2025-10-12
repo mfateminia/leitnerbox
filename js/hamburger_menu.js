@@ -1,22 +1,34 @@
 // Hamburger Menu Functionality
 class HamburgerMenu {
     constructor() {
+        console.log('HamburgerMenu constructor called');
         this.init();
     }
 
     init() {
-        this.createMenuHTML();
-        this.bindEvents();
-        this.setCurrentPage();
+        console.log('HamburgerMenu init called on page:', window.location.pathname);
+        try {
+            this.createMenuHTML();
+            this.setCurrentPage();
+            console.log('HamburgerMenu initialization completed successfully');
+        } catch (error) {
+            console.error('Error during HamburgerMenu initialization:', error);
+        }
     }
 
     createMenuHTML() {
         // Remove existing navigation buttons
         this.removeExistingNavButtons();
 
+        // Check if hamburger menu already exists
+        if (document.querySelector('.hamburger-menu')) {
+            console.log('Hamburger menu already exists, skipping creation');
+            return;
+        }
+
         // Create hamburger menu HTML
         const menuHTML = `
-            <div class="hamburger-menu">
+            <div class="hamburger-menu" style="position: fixed !important; bottom: 80px !important; left: 20px !important; z-index: 500 !important; display: inline-block !important;">
                 <button class="hamburger-btn" id="hamburgerBtn">
                     <div class="hamburger-icon">
                         <span></span>
@@ -35,21 +47,15 @@ class HamburgerMenu {
             </div>
         `;
 
-        // Find the button container and insert the menu as the first item
-        const buttonContainer = document.querySelector('.button-container') || 
-                               document.querySelector('.control-buttons');
-        
-        if (buttonContainer) {
-            buttonContainer.insertAdjacentHTML('afterbegin', menuHTML);
-        } else {
-            // Fallback: create a button container if none exists
-            const container = document.querySelector('.container') || document.body;
-            const fallbackHTML = `
-                <div class="button-container">
-                    ${menuHTML}
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', fallbackHTML);
+        try {
+            // Insert hamburger menu directly into body (fixed position)
+            document.body.insertAdjacentHTML('beforeend', menuHTML);
+            console.log('Hamburger menu created successfully');
+            
+            // Bind events immediately after creating the HTML
+            this.bindEvents();
+        } catch (error) {
+            console.error('Error creating hamburger menu:', error);
         }
     }
 
@@ -100,9 +106,22 @@ class HamburgerMenu {
         const navMenu = document.getElementById('navMenu');
 
         if (hamburgerBtn && navMenu) {
-            hamburgerBtn.addEventListener('click', () => {
+            console.log('Binding hamburger menu events');
+            console.log('Hamburger button element:', hamburgerBtn);
+            console.log('Nav menu element:', navMenu);
+            
+            hamburgerBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Hamburger button clicked!');
+                console.log('Before toggle - Button classes:', hamburgerBtn.className);
+                console.log('Before toggle - Menu classes:', navMenu.className);
+                
                 hamburgerBtn.classList.toggle('active');
                 navMenu.classList.toggle('active');
+                
+                console.log('After toggle - Button classes:', hamburgerBtn.className);
+                console.log('After toggle - Menu classes:', navMenu.className);
             });
 
             // Close menu when clicking outside
@@ -120,7 +139,59 @@ class HamburgerMenu {
                     navMenu.classList.remove('active');
                 }
             });
+            
+            // Fallback: Add click handler to the entire hamburger menu div
+            const hamburgerMenu = document.querySelector('.hamburger-menu');
+            if (hamburgerMenu) {
+                hamburgerMenu.addEventListener('click', (e) => {
+                    // Only toggle if clicking on the button or its children, not the menu itself
+                    if (e.target.closest('.hamburger-btn')) {
+                        console.log('Fallback click handler triggered');
+                        hamburgerBtn.classList.toggle('active');
+                        navMenu.classList.toggle('active');
+                    }
+                });
+            }
+        } else {
+            console.error('Hamburger menu elements not found:', {
+                hamburgerBtn: !!hamburgerBtn,
+                navMenu: !!navMenu
+            });
         }
+        
+        // Hide hamburger menu when modals are open
+        this.setupModalDetection();
+    }
+
+    setupModalDetection() {
+        const hamburgerMenu = document.querySelector('.hamburger-menu');
+        if (!hamburgerMenu) return;
+
+        // Watch for modal overlay visibility changes
+        const observer = new MutationObserver((mutations) => {
+            const modalOverlay = document.querySelector('.modal-overlay');
+            if (modalOverlay && modalOverlay.style.display !== 'none') {
+                hamburgerMenu.style.display = 'none';
+            } else {
+                hamburgerMenu.style.display = 'inline-block';
+            }
+        });
+
+        // Observe document for modal changes
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['style', 'class']
+        });
+
+        // Also check immediately
+        setTimeout(() => {
+            const modalOverlay = document.querySelector('.modal-overlay');
+            if (modalOverlay && modalOverlay.style.display !== 'none') {
+                hamburgerMenu.style.display = 'none';
+            }
+        }, 100);
     }
 
     setCurrentPage() {
@@ -153,5 +224,22 @@ class HamburgerMenu {
 
 // Initialize hamburger menu when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new HamburgerMenu();
+    // Add a small delay to ensure all page elements are ready
+    setTimeout(() => {
+        new HamburgerMenu();
+    }, 100);
 });
+
+// Also initialize if the script loads after DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            new HamburgerMenu();
+        }, 100);
+    });
+} else {
+    // DOM is already ready
+    setTimeout(() => {
+        new HamburgerMenu();
+    }, 100);
+}

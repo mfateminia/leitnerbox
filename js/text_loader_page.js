@@ -447,7 +447,7 @@ Example Output JSON format:
         // Show loading state
         this.nextBtn.classList.add('loading');
         this.nextBtn.disabled = true;
-        this.nextBtn.textContent = 'Translating...';
+        this.nextBtn.textContent = 'loading';
 
         try {
             // Get translation from Gemini AI

@@ -13,6 +13,7 @@ class WordReviewApp {
         // Letter arrangement exercise state
         this.matchingResults = new Map(); // wordId -> boolean (success/failure in matching)
         this.letterExerciseWords = []; // Words that passed matching stage
+        this.reviewedWordsForLater = []; // Previously reviewed words that skip matching
         this.currentLetterWord = null;
         this.currentLetterIndex = 0;
         this.userWord = '';
@@ -126,7 +127,26 @@ class WordReviewApp {
         this.elements.letterExerciseArea.style.display = 'none';
         this.elements.letterResultMessage.style.display = 'none';
         
-        this.setupMatchingExercise();
+        // Separate first-time words from previously reviewed words
+        const firstTimeWords = this.currentWords.filter(word => word.last_reviewed_at === null);
+        const reviewedWords = this.currentWords.filter(word => word.last_reviewed_at !== null);
+        
+        if (firstTimeWords.length > 0) {
+            // Start with matching exercise for first-time words
+            this.currentWords = firstTimeWords;
+            this.reviewedWordsForLater = reviewedWords; // Store for after matching
+            this.setupMatchingExercise();
+        } else {
+            // All words have been reviewed before, go directly to letter arrangement
+            this.letterExerciseWords = reviewedWords;
+            this.currentLetterIndex = 0;
+            // Mark all as "passed matching" since we're skipping it
+            reviewedWords.forEach(word => {
+                this.matchingResults.set(word.id, true);
+            });
+            this.elements.matchingArea.style.display = 'none';
+            this.startLetterExercise();
+        }
     }
 
     setupMatchingExercise() {
@@ -328,6 +348,7 @@ class WordReviewApp {
         this.correctMatches = 0;
         this.matchingResults.clear();
         this.letterExerciseWords = [];
+        this.reviewedWordsForLater = [];
         this.currentLetterIndex = 0;
         this.userWord = '';
         this.mistakes = 0;
@@ -370,6 +391,16 @@ class WordReviewApp {
         this.letterExerciseWords = this.currentWords.filter(word => 
             this.matchingResults.get(word.id) === true
         );
+        
+        // Add previously reviewed words that skipped matching to letter exercise
+        if (this.reviewedWordsForLater.length > 0) {
+            // Mark reviewed words as passed matching
+            this.reviewedWordsForLater.forEach(word => {
+                this.matchingResults.set(word.id, true);
+            });
+            this.letterExerciseWords = [...this.letterExerciseWords, ...this.reviewedWordsForLater];
+            this.reviewedWordsForLater = []; // Clear the array
+        }
         
         if (this.letterExerciseWords.length === 0) {
             // No words passed matching, all words need to be retried

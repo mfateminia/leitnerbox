@@ -141,6 +141,7 @@
     color: var(--color-primary);
     display: block;
     margin-bottom: 2px;
+    font-size: 18px;
 }
 
 .word-translation {
