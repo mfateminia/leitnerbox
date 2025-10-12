@@ -10,11 +10,10 @@
 <body>
     <div class="review-container">
         <div class="review-header">
-            <h1>Word Matching Exercise</h1>
-            <p>Click on a Swedish word, then click on its English translation to match them</p>
+            <h3>Word Review - Two-Stage Exercise</h3>
         </div>
 
-        <div class="review-stats">
+        <!-- <div class="review-stats">
             <div class="stat-card">
                 <div class="stat-number" id="totalWords">0</div>
                 <div class="stat-label">Total Words</div>
@@ -31,11 +30,11 @@
                 <div class="stat-number" id="accuracy">0%</div>
                 <div class="stat-label">Accuracy</div>
             </div>
-        </div>
+        </div> -->
 
-        <div class="progress-bar">
+        <!-- <div class="progress-bar">
             <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
-        </div>
+        </div> -->
 
         <div class="control-buttons">
             <!-- Navigation buttons removed - now using hamburger menu -->
@@ -47,15 +46,40 @@
 
         <div class="matching-area" id="matchingArea" style="display: none;">
             <div class="words-column">
-                <div class="column-header">Swedish Words</div>
+                <div class="column-header">Swedish</div>
                 <div id="wordsContainer"></div>
             </div>
             
             <div class="translations-column">
-                <div class="column-header">English Translations</div>
+                <div class="column-header">English</div>
                 <div id="translationsContainer"></div>
             </div>
         </div>
+
+        <!-- Letter Arrangement Exercise -->
+        <div class="letter-exercise-area" id="letterExerciseArea" style="display: none;">
+            <div class="exercise-header">
+                <p>Letter Arrangement Exercise</p>
+            </div>
+            
+            <div class="translation-display" id="translationDisplay"></div>
+            
+            <div class="user-word-display" id="userWordDisplay">(click letters to build word)</div>
+            
+            <div class="letters-container" id="lettersContainer"></div>
+            
+            <div class="letter-controls">
+                <button class="btn btn-secondary" id="hintBtn">Hint</button>
+                <button class="btn btn-outline" id="clearWordBtn">Clear</button>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="letterProgress" style="width: 0%;"></div>
+            </div>
+            
+            <div id="letterResultMessage" class="result-message" style="display: none;"></div>
+        </div>
+        
         <div id="resultMessage" class="result-message" style="display: none;"></div>
 
     </div>

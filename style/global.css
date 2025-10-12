@@ -217,8 +217,15 @@ button:disabled {
 }
 
 .result-incomplete {
+    background: var(--color-error-bg);
+    color: var(--color-error-text);
+    border: 1px solid var(--color-error-border);
+}
+
+.result-warning {
     background: var(--color-warning-bg);
     color: var(--color-warning-text);
+    border: 1px solid var(--color-warning-bg);
 }
 
 /* Loading Styles */
