@@ -102,38 +102,42 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     flex: 0 1 calc(50% - 4px);
     min-width: 120px;
-    position: relative;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.word-pair.removable {
-    padding-right: 35px; /* Make space for remove button */
+.word-content {
+    flex: 1;
+    min-width: 0; /* Allow text to shrink */
 }
 
-.remove-phrase-btn {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: var(--color-accent);
-    color: var(--color-white);
+.add-phrase-btn, .remove-phrase-btn {
     border: none;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
+    border-radius: 6px;
+    max-width: 36px;
+    height: 36px;
+    font-size: 18px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
     line-height: 1;
     padding: 0;
     min-width: auto;
+    color: white;
 }
 
-.remove-phrase-btn:hover {
-    background: var(--color-accent-hover);
-    transform: scale(1.1);
+.add-phrase-btn {
+    background: var(--color-success, #28a745);
+}
+
+.remove-phrase-btn {
+    background: var(--color-accent, #ff6b6b);
 }
 
 .word-original {
@@ -147,6 +151,11 @@
 .word-translation {
     color: var(--color-text-secondary);
     font-size: 18px;
+}
+
+/* Visual feedback for selection state */
+.word-pair:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* Translation reveal functionality */
@@ -203,15 +212,12 @@
     .word-pair {
         flex: 1 1 100%;
         min-width: auto;
+        padding: 12px 16px; /* Bigger padding for mobile */
     }
     
-    .word-pair.removable {
-        padding-right: 30px;
-    }
-    
-    .remove-phrase-btn {
-        width: 18px;
-        height: 18px;
-        font-size: 11px;
+    .add-phrase-btn, .remove-phrase-btn {
+        max-wi: 44px; /* Larger buttons for mobile */
+        height: 44px;
+        font-size: 20px;
     }
 }

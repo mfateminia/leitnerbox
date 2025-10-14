@@ -206,14 +206,21 @@ class ParagraphLearningApp {
         // Store the translation for later reveal
         this.currentTranslation = paragraphData.translated_paragraph;
         
+        // Initialize selected expressions array
+        this.selectedExpressions = [];
+        
         // Clear previous expressions
         this.overviewWords.innerHTML = '';
         
-        // Add expression pairs with remove functionality
+        // Add expression pairs with add/remove functionality (none selected by default)
         paragraphData.expressions.forEach((expressionObj, index) => {
             const expressionPair = document.createElement('div');
-            expressionPair.className = 'word-pair removable';
+            expressionPair.className = 'word-pair selectable';
             expressionPair.dataset.expressionIndex = index;
+            
+            // Create content wrapper for the text
+            const wordContent = document.createElement('div');
+            wordContent.className = 'word-content';
             
             const originalExpression = document.createElement('span');
             originalExpression.className = 'word-original';
@@ -223,15 +230,27 @@ class ParagraphLearningApp {
             translatedExpression.className = 'word-translation';
             translatedExpression.textContent = expressionObj.translation;
             
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-phrase-btn';
-            removeBtn.innerHTML = '&times;';
-            removeBtn.title = 'Remove this phrase';
-            removeBtn.addEventListener('click', () => this.removeExpression(index));
+            const addBtn = document.createElement('button');
+            addBtn.className = 'add-phrase-btn';
+            addBtn.innerHTML = '+';
+            addBtn.title = 'Add this phrase to learn';
+            addBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.toggleExpression(index);
+            });
             
-            expressionPair.appendChild(originalExpression);
-            expressionPair.appendChild(translatedExpression);
-            expressionPair.appendChild(removeBtn);
+            // Also allow clicking the entire expression to toggle
+            expressionPair.addEventListener('click', () => {
+                this.toggleExpression(index);
+            });
+            
+            // Append text elements to content wrapper
+            wordContent.appendChild(originalExpression);
+            wordContent.appendChild(translatedExpression);
+            
+            // Append content and button to expression pair
+            expressionPair.appendChild(wordContent);
+            expressionPair.appendChild(addBtn);
             this.overviewWords.appendChild(expressionPair);
         });
         
@@ -257,14 +276,30 @@ class ParagraphLearningApp {
         this.overviewModal.style.display = 'none';
     }
 
-    removeExpression(expressionIndex) {
-        // Remove expression from the data
-        this.paragraphData.expressions.splice(expressionIndex, 1);
+    toggleExpression(expressionIndex) {
+        const expressionPair = document.querySelector(`[data-expression-index="${expressionIndex}"]`);
+        const button = expressionPair.querySelector('.add-phrase-btn, .remove-phrase-btn');
         
-        // Refresh the modal display
-        this.showOverviewModal(this.paragraphData);
+        if (this.selectedExpressions.includes(expressionIndex)) {
+            // Remove from selected
+            this.selectedExpressions = this.selectedExpressions.filter(idx => idx !== expressionIndex);
+            button.className = 'add-phrase-btn';
+            button.innerHTML = '+';
+            button.title = 'Add this phrase to learn';
+            this.showMessage(`Expression removed. ${this.selectedExpressions.length} expressions selected.`, 'info');
+        } else {
+            // Add to selected
+            this.selectedExpressions.push(expressionIndex);
+            button.className = 'remove-phrase-btn';
+            button.innerHTML = '&times;';
+            button.title = 'Remove this phrase';
+            this.showMessage(`Expression added. ${this.selectedExpressions.length} expressions selected.`, 'info');
+        }
+    }
 
-        this.showMessage(`Expression removed. ${this.paragraphData.expressions.length} expressions remaining.`, 'info');
+    // Legacy method - keeping for compatibility but updating logic
+    removeExpression(expressionIndex) {
+        this.toggleExpression(expressionIndex);
     }
 
     async saveToDatabase() {
@@ -281,10 +316,23 @@ class ParagraphLearningApp {
         saveBtn.textContent = 'Saving...';
 
         try {
-            // Save to database
-            await this.paragraphsDB.addParagraph(this.paragraphData);
+            // Check if any expressions are selected
+            if (!this.selectedExpressions || this.selectedExpressions.length === 0) {
+                this.showMessage('Please select at least one expression to learn!', 'error');
+                return;
+            }
 
-            this.showMessage(`Successfully saved paragraph with ${this.paragraphData.expressions.length} expressions!`, 'success');
+            // Create a copy of paragraph data with only selected expressions
+            const selectedExpressionsData = this.selectedExpressions.map(index => this.paragraphData.expressions[index]);
+            const paragraphToSave = {
+                ...this.paragraphData,
+                expressions: selectedExpressionsData
+            };
+
+            // Save to database
+            await this.paragraphsDB.addParagraph(paragraphToSave);
+
+            this.showMessage(`Successfully saved paragraph with ${selectedExpressionsData.length} expressions!`, 'success');
 
             // Reset the workspace and close modal
             this.resetWorkspace();
@@ -292,6 +340,7 @@ class ParagraphLearningApp {
             
             // Clear pending data
             this.paragraphData = null;
+            this.selectedExpressions = [];
 
         } catch (error) {
             console.error('Error saving to database:', error);
