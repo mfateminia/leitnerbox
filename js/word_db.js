@@ -242,6 +242,17 @@ class WordDB {
             masteryRate: allWords.length > 0 ? (masteredWords.length / allWords.length * 100).toFixed(1) : 0
         };
     }
+
+    /**
+     * Get words associated with a specific paragraph
+     * @param {number} paragraphId - The paragraph ID
+     * @returns {Promise<Object[]>} Array of words associated with the paragraph
+     */
+    async getWordsByParagraphId(paragraphId) {
+        await this.init();
+        const allWords = await this.dbWrapper.readAll();
+        return allWords.filter(word => word.paragraph_id === paragraphId);
+    }
 }
 
 // Usage example:

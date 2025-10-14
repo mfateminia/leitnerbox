@@ -23,7 +23,7 @@ class ParagraphsDB {
      * @param {Object} paragraphData - The paragraph object
      * @param {string} paragraphData.paragraph - The original paragraph text
      * @param {string} paragraphData.translated_paragraph - The full translation of the paragraph
-     * @param {Object[]} paragraphData.expressions - Array of expression objects
+     * @param {Object[]} paragraphData.expressions - Array of expression objects (will be stored separately in word_db)
      * @param {string} paragraphData.expressions[].expression - The expression itself
      * @param {string} paragraphData.expressions[].translation - The translation of the expression
      * @param {Date|null} paragraphData.last_reviewed_at - Last review date (optional, defaults to null)
@@ -48,11 +48,10 @@ class ParagraphsDB {
             }
         }
 
-        // Create paragraph object with defaults
+        // Create paragraph object with defaults (expressions not stored here anymore)
         const paragraph = {
             paragraph: paragraphData.paragraph,
             translated_paragraph: paragraphData.translated_paragraph,
-            expressions: paragraphData.expressions,
             last_reviewed_at: paragraphData.last_reviewed_at || null,
             count_of_successful_reviews: paragraphData.count_of_successful_reviews || 0,
             is_excluded: paragraphData.is_excluded || false,

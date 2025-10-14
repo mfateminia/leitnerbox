@@ -8,6 +8,7 @@ class ParagraphReviewApp {
         this.reviewStats = document.getElementById('reviewStats');
         
         this.paragraphsDB = new ParagraphsDB();
+        this.wordDB = new WordDB(); // Add WordDB instance
         this.reviewParagraphs = [];
         this.currentIndex = 0;
         this.currentParagraph = null;
@@ -79,7 +80,7 @@ class ParagraphReviewApp {
 
 
 
-    handleReveal() {
+    async handleReveal() {
         if (!this.currentParagraph) return;
         
         if (this.isShowingTranslation) {
@@ -89,13 +90,13 @@ class ParagraphReviewApp {
             this.isShowingTranslation = false;
         } else {
             // Show translation
-            this.showTranslation();
+            await this.showTranslation();
             this.revealBtn.textContent = 'Original';
             this.isShowingTranslation = true;
         }
     }
     
-    showTranslation() {
+    async showTranslation() {
         if (!this.currentParagraph || !this.currentParagraph.translated_paragraph) {
             this.paragraphDisplay.innerHTML = '<div class="translation-text">Translation not available</div>';
             return;
@@ -108,23 +109,31 @@ class ParagraphReviewApp {
         translationDiv.className = 'translation-text';
         translationDiv.innerHTML = this.currentParagraph.translated_paragraph;
         this.paragraphDisplay.appendChild(translationDiv);
-        // Show expression explanations
-        if (this.currentParagraph.expressions && Array.isArray(this.currentParagraph.expressions) && this.currentParagraph.expressions.length > 0) {
-            const expressionsDiv = document.createElement('div');
-            expressionsDiv.className = 'translation-words';
+        
+        // Show expression explanations - fetch from word_db instead of paragraph
+        try {
+            const associatedWords = await this.wordDB.getWordsByParagraphId(this.currentParagraph.id);
+            
+            if (associatedWords && associatedWords.length > 0) {
+                const expressionsDiv = document.createElement('div');
+                expressionsDiv.className = 'translation-words';
 
-            const expressionsTitle = document.createElement('h3');
-            expressionsTitle.textContent = 'Expression Explanations:';
-            expressionsDiv.appendChild(expressionsTitle);
+                const expressionsTitle = document.createElement('h3');
+                expressionsTitle.textContent = 'Expression Explanations:';
+                expressionsDiv.appendChild(expressionsTitle);
 
-            this.currentParagraph.expressions.forEach(expressionData => {
-                const expressionItem = document.createElement('div');
-                expressionItem.className = 'phrase-explanation';
-                expressionItem.innerHTML = `<strong>${expressionData.expression}:</strong> ${expressionData.translation}`;
-                expressionsDiv.appendChild(expressionItem);
-            });
+                associatedWords.forEach(wordData => {
+                    const expressionItem = document.createElement('div');
+                    expressionItem.className = 'phrase-explanation';
+                    expressionItem.innerHTML = `<strong>${wordData.word}:</strong> ${wordData.translation}`;
+                    expressionsDiv.appendChild(expressionItem);
+                });
 
-            this.paragraphDisplay.appendChild(expressionsDiv);
+                this.paragraphDisplay.appendChild(expressionsDiv);
+            }
+        } catch (error) {
+            console.error('Error loading associated words:', error);
+            // Continue without expressions if there's an error
         }
     }
 

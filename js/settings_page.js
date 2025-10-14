@@ -215,11 +215,31 @@ class SettingsPage {
                 await this.wordDB.dbWrapper.write(wordData);
             }
 
-            // Restore paragraphs
+            // Restore paragraphs - handle legacy data that might have expressions
             for (const paragraph of data.paragraphs) {
-                // Remove the ID so it gets auto-generated
-                const { id, ...paragraphData } = paragraph;
-                await this.paragraphsDB.dbWrapper.write(paragraphData);
+                // Remove the ID and expressions (if present) so it gets auto-generated and expressions aren't duplicated
+                const { id, expressions, ...paragraphData } = paragraph;
+                const paragraphId = await this.paragraphsDB.dbWrapper.write(paragraphData);
+                
+                // If legacy data has expressions but no corresponding words, create them
+                if (expressions && Array.isArray(expressions) && expressions.length > 0) {
+                    for (const expr of expressions) {
+                        try {
+                            // Check if word already exists to avoid duplicates
+                            const existingWord = await this.wordDB.getWordByText(expr.expression);
+                            if (!existingWord) {
+                                await this.wordDB.addWord({
+                                    word: expr.expression,
+                                    translation: expr.translation,
+                                    paragraphId: paragraphId
+                                });
+                            }
+                        } catch (error) {
+                            // Ignore duplicate word errors
+                            console.log(`Skipping duplicate word: ${expr.expression}`);
+                        }
+                    }
+                }
             }
 
             this.showMessage(`Data restored successfully! ${data.words.length} words and ${data.paragraphs.length} paragraphs restored.`, 'success');
