@@ -216,7 +216,7 @@
     }
     
     .add-phrase-btn, .remove-phrase-btn {
-        max-wi: 44px; /* Larger buttons for mobile */
+        max-width: 44px; /* Larger buttons for mobile */
         height: 44px;
         font-size: 20px;
     }
