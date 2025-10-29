@@ -1,7 +1,7 @@
 class GeminiAI {
     constructor(apiKey) {
         this.apiKey = apiKey
-        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+        this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
     }
 
     async generateContent(userPrompt) {
