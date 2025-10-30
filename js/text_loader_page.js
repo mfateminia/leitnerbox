@@ -35,12 +35,11 @@ class ParagraphLearningApp {
         // Pending data for overview modal
         this.paragraphData = null;
         
-        // Track mode state
-        this.currentMode = 'normal'; // 'normal' or 'track'
-        this.processedSentences = []; // Array of processed sentence objects
-        this.lastProcessedLength = 0;
+        // Mode state
+        this.currentMode = 'reading'; // 'reading' or 'writing'
+        this.processedText = []; // Array of processed sentence objects
         this.isProcessing = false;
-        this.debounceTimer = null;
+        this.originalText = ''; // Store original text without annotations
         
         this.initializeEvents();
         this.loadWorkspaceFromStorage();
@@ -53,8 +52,8 @@ class ParagraphLearningApp {
         this.evaluateFullBtn.addEventListener('click', () => this.evaluateFullText());
         
         // Mode toggle events
-        this.normalModeBtn.addEventListener('click', () => this.switchMode('normal'));
-        this.trackModeBtn.addEventListener('click', () => this.switchMode('track'));
+        this.normalModeBtn.addEventListener('click', () => this.switchMode('reading'));
+        this.trackModeBtn.addEventListener('click', () => this.switchMode('writing'));
 
         // Workspace modal events
         this.closeModalBtn.addEventListener('click', () => this.closeWorkspaceModal());
@@ -87,14 +86,9 @@ class ParagraphLearningApp {
             this.updateNextButtonState();
         });
         
-        // Rich text input handler for track mode
+        // Rich text input handler for writing mode
         this.richTextInput.addEventListener('input', () => {
             this.updateNextButtonState();
-            
-            // Handle track mode incremental evaluation
-            if (this.currentMode === 'track') {
-                this.handleTrackModeInput();
-            }
         });
 
         // Initial button state check
@@ -119,107 +113,52 @@ class ParagraphLearningApp {
         this.currentMode = mode;
         
         // Update button states
-        if (mode === 'normal') {
+        if (mode === 'reading') {
             this.normalModeBtn.classList.add('active');
             this.trackModeBtn.classList.remove('active');
             this.evaluateFullBtn.style.display = 'none';
-            document.querySelector('.container').classList.remove('track-mode');
+            this.workspaceBtn.style.display = 'inline-block';
+            document.querySelector('.container').classList.remove('writing-mode');
             this.textInput.placeholder = 'Enter your paragraph here...';
         } else {
             this.trackModeBtn.classList.add('active');
             this.normalModeBtn.classList.remove('active');
             this.evaluateFullBtn.style.display = 'inline-block';
-            document.querySelector('.container').classList.add('track-mode');
-            this.textInput.placeholder = 'Type or paste your text. Each sentence will be evaluated automatically...';
+            this.workspaceBtn.style.display = 'none';
+            document.querySelector('.container').classList.add('writing-mode');
+            this.textInput.placeholder = 'Type or paste your text...';
+            // Make rich text editable when entering writing mode
+            this.richTextInput.contentEditable = 'true';
+            this.richTextInput.style.cursor = 'text';
         }
         
-        // Reset track mode state
-        this.processedSentences = [];
-        this.lastProcessedLength = 0;
+        // Reset state
+        this.processedText = [];
+        this.originalText = '';
         
         this.showMessage(`Switched to ${mode} mode`, 'info');
     }
 
-    // Track mode input handler with debouncing
-    handleTrackModeInput() {
-        // Clear previous timer
-        if (this.debounceTimer) {
-            clearTimeout(this.debounceTimer);
-        }
-        
-        // Debounce for 1.5 seconds after user stops typing
-        this.debounceTimer = setTimeout(() => {
-            this.evaluateNewSentences();
-        }, 1500);
-    }
-    
     // Get plain text from rich text editor
     getPlainText() {
+        // If we have original text stored, return that (without annotations)
+        // Otherwise extract from the contenteditable div
+        if (this.originalText) {
+            return this.originalText;
+        }
         return this.richTextInput.textContent || '';
     }
     
-    // Get HTML from rich text editor
-    getRichTextHTML() {
-        return this.richTextInput.innerHTML || '';
+    // Set the original plain text (before any annotations)
+    setOriginalText(text) {
+        this.originalText = text;
     }
-
-    // Extract sentences from text
-    extractSentences(text) {
-        // Split by sentence-ending punctuation followed by space or end of string
-        const sentences = text.match(/[^.!?]+[.!?]+(?:\s|$)/g) || [];
-        return sentences.map(s => s.trim()).filter(s => s.length > 0);
-    }
-
-    // Evaluate only new sentences incrementally
-    async evaluateNewSentences() {
-        if (this.isProcessing) return;
-        
-        const currentText = this.getPlainText().trim();
-        if (!currentText || currentText.length <= this.lastProcessedLength) {
-            this.lastProcessedLength = currentText.length;
-            return;
-        }
-        
-        // Extract all sentences from current text
-        const allSentences = this.extractSentences(currentText);
-        
-        // Find new sentences to process
-        const newSentences = allSentences.slice(this.processedSentences.length);
-        
-        if (newSentences.length === 0) return;
-        
-        this.isProcessing = true;
-        
-        try {
-            for (const sentence of newSentences) {
-                // Evaluate the sentence
-                const result = await this.evaluateSentence(sentence);
-                
-                // Store result
-                this.processedSentences.push({
-                    original: sentence,
-                    corrected: result.corrected_sentence,
-                    errors: result.errors
-                });
-                
-                // Apply corrections to the rich text editor
-                this.applyCorrectionsToRichText();
-            }
-            
-            this.lastProcessedLength = this.getPlainText().length;
-            this.showMessage(`Evaluated ${newSentences.length} sentence(s)`, 'success');
-            
-        } catch (error) {
-            console.error('Error evaluating sentences:', error);
-            this.showMessage('Error evaluating text: ' + error.message, 'error');
-        } finally {
-            this.isProcessing = false;
-        }
-    }
-
+    
     // Evaluate full text at once
     async evaluateFullText() {
-        const currentText = this.getPlainText().trim();
+        // Get the current text from the rich text editor
+        const currentText = (this.richTextInput.textContent || '').trim();
+        
         if (!currentText) {
             this.showMessage('Please enter some text first!', 'error');
             return;
@@ -228,67 +167,137 @@ class ParagraphLearningApp {
         if (this.isProcessing) return;
         
         this.isProcessing = true;
-        this.processedSentences = [];
+        this.processedText = [];
+        
+        // Store the original text (before annotations)
+        this.setOriginalText(currentText);
         
         // Update button state
         this.evaluateFullBtn.disabled = true;
-        this.evaluateFullBtn.textContent = 'Processing...';
+        this.evaluateFullBtn.textContent = 'Assessing...';
         
         try {
-            const allSentences = this.extractSentences(currentText);
+            this.showMessage('⏳ Evaluating text...', 'info');
             
-            for (let i = 0; i < allSentences.length; i++) {
-                const sentence = allSentences[i];
-                
-                // Show progress
-                this.showMessage(`⏳ Evaluating sentence ${i + 1} of ${allSentences.length}...`, 'info');
-                
-                const result = await this.evaluateSentence(sentence);
-                
-                this.processedSentences.push({
-                    original: sentence,
-                    corrected: result.corrected_sentence,
-                    errors: result.errors
-                });
-            }
+            // Single call to Gemini for the entire text (use original text)
+            const result = await this.evaluateWriting(this.originalText);
+            
+            // Store the result
+            this.processedText = [{
+                original: this.originalText,
+                corrected: result.corrected_text,
+                errors: result.errors
+            }];
             
             // Apply all corrections to rich text editor
             this.applyCorrectionsToRichText();
             
-            this.lastProcessedLength = this.getPlainText().length;
-            this.showMessage(`Successfully evaluated ${allSentences.length} sentences`, 'success');
+            // Make rich text editor readonly
+            this.richTextInput.contentEditable = 'false';
+            this.richTextInput.style.cursor = 'default';
+            
+            // Keep Evaluate button disabled but change text back, enable Next button
+            this.evaluateFullBtn.textContent = 'Assess';
+            this.nextBtn.disabled = false;
+            
+            this.showMessage(`Successfully evaluated! Found ${result.errors.length} errors. Click "Next" to continue.`, 'success');
             
         } catch (error) {
             console.error('Error evaluating full text:', error);
             this.showMessage('Error: ' + error.message, 'error');
+            // Re-enable evaluate button on error
+            this.evaluateFullBtn.disabled = false;
+            this.evaluateFullBtn.textContent = 'Assess';
         } finally {
             this.isProcessing = false;
-            this.evaluateFullBtn.disabled = false;
-            this.evaluateFullBtn.textContent = 'Evaluate Full';
         }
     }
 
-    // Call Gemini AI to evaluate a single sentence
-    async evaluateSentence(sentence) {
-        const prompt = `Analyze this Swedish sentence for errors (grammar, spelling, style):
+    // Normalize text for consistent processing
+    normalizeText(text) {
+        // Convert to Unicode NFC form
+        let normalized = text.normalize('NFC');
+        
+        // Replace CRLF with LF
+        normalized = normalized.replace(/\r\n/g, '\n');
+        
+        // Optionally remove zero-width characters (but keep them mapped for restoration)
+        // For now, we'll keep the text as-is to maintain positions
+        
+        return normalized;
+    }
+    
+    // Find all occurrences of a word in text with context matching
+    findWordPositions(normalizedText, wordToFind, contextBefore = '', contextAfter = '') {
+        const positions = [];
+        
+        // Escape special regex characters in the word
+        const escapedWord = wordToFind.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        
+        // Create regex with word boundaries
+        const wordRegex = new RegExp(`\\b${escapedWord}\\b`, 'gi');
+        
+        let match;
+        while ((match = wordRegex.exec(normalizedText)) !== null) {
+            const start = match.index;
+            const end = start + match[0].length;
+            
+            // If context is provided, verify it matches
+            if (contextBefore || contextAfter) {
+                const actualBefore = normalizedText.substring(Math.max(0, start - 20), start);
+                const actualAfter = normalizedText.substring(end, Math.min(normalizedText.length, end + 20));
+                
+                const beforeMatches = !contextBefore || actualBefore.includes(contextBefore);
+                const afterMatches = !contextAfter || actualAfter.includes(contextAfter);
+                
+                if (beforeMatches && afterMatches) {
+                    positions.push({ start, end, matchedText: match[0] });
+                }
+            } else {
+                positions.push({ start, end, matchedText: match[0] });
+            }
+        }
+        
+        return positions;
+    }
+    
+    // Call Gemini AI to evaluate text and return structured response
+    async evaluateWriting(text) {
+        const prompt = `Analyze this Swedish text for errors (grammar, spelling, style):
 
-Sentence: "${sentence}"
+Text: "${text}"
 
 Return ONLY valid JSON in this exact format:
 {
   "errors": [
     {
-      "original": "<the exact incorrect word or phrase from the sentence>",
-      "correction": "<the corrected version>",
-      "type": "grammar|spelling|style"
+      "word": "<the exact incorrect word or phrase from the text>",
+      "suggestion": "<the corrected version>",
+      "type": "grammar|spelling|style",
+      "context_before": "<2-3 words that appear immediately before this word>",
+      "context_after": "<2-3 words that appear immediately after this word>"
     }
   ],
-  "corrected_sentence": "<full corrected sentence>"
+  "corrected_text": "<full corrected text>"
 }
 
-If no errors, return: {"errors": [], "corrected_sentence": "${sentence}"}
+If no errors, return: {"errors": [], "corrected_text": "${text}"}
 
-IMPORTANT: The "original" field must be the EXACT text as it appears in the sentence.
+IMPORTANT: 
+- "word" must be the EXACT word/phrase as it appears in the text (preserve case, spacing)
+- "context_before" and "context_after" help locate the word if it appears multiple times
+- Do NOT include character positions or indexes
+- Be precise with the context strings
+
+Example:
+Input: "jag hetar ali jag bor i sverige"
+Output: {
+  "errors": [
+    {"word": "jag", "suggestion": "Jag", "type": "grammar", "context_before": "", "context_after": "hetar ali"},
+    {"word": "hetar", "suggestion": "heter", "type": "spelling", "context_before": "jag", "context_after": "ali jag"}
+  ],
+  "corrected_text": "Jag heter Ali. Jag bor i Sverige."
+}
 
 Return ONLY the JSON, no other text.`;
 
@@ -308,93 +317,123 @@ Return ONLY the JSON, no other text.`;
             }
         }
         
-        return parsedResponse;
+        // Normalize the input text
+        const normalizedText = this.normalizeText(text);
+        
+        // Convert AI response to position-based errors
+        const positionedErrors = [];
+        
+        for (const error of parsedResponse.errors || []) {
+            // Find positions of this word using context
+            const positions = this.findWordPositions(
+                normalizedText,
+                error.word,
+                error.context_before || '',
+                error.context_after || ''
+            );
+            
+            if (positions.length === 0) {
+                // Fallback: try without context
+                const fallbackPositions = this.findWordPositions(normalizedText, error.word);
+                
+                if (fallbackPositions.length > 0) {
+                    console.warn(`Word "${error.word}" found without context. Using first occurrence.`);
+                    const pos = fallbackPositions[0];
+                    positionedErrors.push({
+                        original: pos.matchedText,
+                        correction: error.suggestion,
+                        type: error.type,
+                        start: pos.start,
+                        end: pos.end
+                    });
+                } else {
+                    console.warn(`Word "${error.word}" not found in text. Skipping.`);
+                }
+            } else if (positions.length === 1) {
+                // Single match - use it
+                const pos = positions[0];
+                positionedErrors.push({
+                    original: pos.matchedText,
+                    correction: error.suggestion,
+                    type: error.type,
+                    start: pos.start,
+                    end: pos.end
+                });
+            } else {
+                // Multiple matches with context - use the first one
+                // In a more sophisticated system, we could ask the user or use more context
+                console.warn(`Multiple matches for "${error.word}". Using first match with context.`);
+                const pos = positions[0];
+                positionedErrors.push({
+                    original: pos.matchedText,
+                    correction: error.suggestion,
+                    type: error.type,
+                    start: pos.start,
+                    end: pos.end
+                });
+            }
+        }
+        
+        // Validate positions
+        for (const error of positionedErrors) {
+            const extracted = normalizedText.substring(error.start, error.end);
+            if (extracted.toLowerCase() !== error.original.toLowerCase()) {
+                console.error(`Position validation failed for "${error.original}". Got "${extracted}" at position ${error.start}-${error.end}`);
+            }
+        }
+        
+        return {
+            errors: positionedErrors,
+            corrected_text: parsedResponse.corrected_text
+        };
     }
 
     // Apply corrections directly to the rich text editor with HTML formatting
     applyCorrectionsToRichText() {
-        // Save cursor position
-        const selection = window.getSelection();
-        const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-        const cursorOffset = range ? range.startOffset : 0;
+        if (this.processedText.length === 0) return;
         
-        // Build the corrected HTML
-        let correctedHTML = '';
+        const textData = this.processedText[0];
+        const html = textData.errors.length === 0 
+            ? textData.original 
+            : this.applySentenceCorrectionsHTML(textData.original, textData.errors);
         
-        for (let i = 0; i < this.processedSentences.length; i++) {
-            const sentenceData = this.processedSentences[i];
-            
-            if (sentenceData.errors.length === 0) {
-                // No errors, keep original
-                correctedHTML += this.escapeHtml(sentenceData.original);
-            } else {
-                // Apply corrections to this sentence with HTML
-                correctedHTML += this.applySentenceCorrectionsHTML(sentenceData.original, sentenceData.errors);
-            }
-            
-            // Add space between sentences if not the last one
-            if (i < this.processedSentences.length - 1) {
-                correctedHTML += ' ';
-            }
-        }
-        
-        // Update rich text editor with formatted HTML
-        this.richTextInput.innerHTML = correctedHTML;
-        
-        // Try to restore cursor position (approximate)
-        try {
-            const textNode = this.richTextInput.firstChild;
-            if (textNode && textNode.nodeType === Node.TEXT_NODE) {
-                const newRange = document.createRange();
-                const newSelection = window.getSelection();
-                const offset = Math.min(cursorOffset, textNode.length);
-                newRange.setStart(textNode, offset);
-                newRange.collapse(true);
-                newSelection.removeAllRanges();
-                newSelection.addRange(newRange);
-            }
-        } catch (e) {
-            // Cursor restoration failed, just place at end
-            this.richTextInput.focus();
-        }
+        this.richTextInput.innerHTML = html;
     }
 
-    // Apply corrections to a single sentence with HTML formatting
+    // Apply corrections with HTML formatting
     applySentenceCorrectionsHTML(original, errors) {
-        let result = original;
+        if (!errors || errors.length === 0) return original;
         
-        // Sort errors by their position in the original text (in reverse to avoid offset issues)
-        const sortedErrors = [...errors].sort((a, b) => {
-            const posA = result.indexOf(a.original);
-            const posB = result.indexOf(b.original);
-            return posB - posA; // Reverse order
-        });
+        const sortedErrors = [...errors].sort((a, b) => a.start - b.start);
+        let html = '';
+        let lastIndex = 0;
         
-        // Apply each correction
         for (const error of sortedErrors) {
-            // Find and replace the error with styled HTML
-            const errorPos = result.indexOf(error.original);
-            
-            if (errorPos !== -1) {
-                const before = this.escapeHtml(result.substring(0, errorPos));
-                const after = result.substring(errorPos + error.original.length);
-                
-                // Create HTML with strikethrough error and green correction
-                const errorHTML = `<span class="error-word">${this.escapeHtml(error.original)}</span>`;
-                const correctionHTML = `<span class="correction-word">${this.escapeHtml(error.correction)}</span>`;
-                
-                result = before + errorHTML + ' ' + correctionHTML + after;
+            // Validate and skip invalid errors
+            if (error.start === undefined || error.end === undefined || 
+                error.start < 0 || error.end > original.length || 
+                error.start >= error.end || error.start < lastIndex) {
+                continue;
             }
+            
+            // Add text before error
+            if (error.start > lastIndex) {
+                html += original.substring(lastIndex, error.start);
+            }
+            
+            // Add error with strikethrough and correction in green
+            const errorText = original.substring(error.start, error.end);
+            html += `<span class="error-word">${errorText}</span> <span class="correction-word">${error.correction}</span>`;
+            
+            lastIndex = error.end;
         }
         
-        return result;
-    }
-    
-    // Escape HTML to prevent XSS
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
+        // Add remaining text
+        if (lastIndex < original.length) {
+            html += original.substring(lastIndex);
+        }
+        
+        return html;
     }
 
     // Workspace modal methods
@@ -608,7 +647,7 @@ Return ONLY the JSON, no other text.`;
         }
     }
 
-    // Legacy method - keeping for compatibility but updating logic
+    // Legacy method - no longer needed, kept for compatibility
     removeExpression(expressionIndex) {
         this.toggleExpression(expressionIndex);
     }
@@ -670,11 +709,9 @@ Return ONLY the JSON, no other text.`;
     }
 
     updateNextButtonState() {
-        if (this.currentMode === 'input' || this.currentMode === 'normal') {
-            const hasContent = this.textInput.value.trim().length > 0;
-            this.nextBtn.disabled = !hasContent;
-        } else if (this.currentMode === 'track') {
-            // In track mode, disable Next button (not needed)
+        if (this.currentMode === 'reading') {
+            this.nextBtn.disabled = this.textInput.value.trim().length === 0;
+        } else if (this.currentMode === 'writing') {
             this.nextBtn.disabled = true;
         }
     }
@@ -689,44 +726,75 @@ Return ONLY the JSON, no other text.`;
         }, 3000);
     }
 
+    resetWorkspace() {
+        this.textInput.value = '';
+        this.updateNextButtonState();
+        this.paragraphData = null;
+    }
+
     handleClear() {
         const userConfirmed = confirm("Are you sure?");
-
-        if (!userConfirmed) {
-            return;
-        }
+        if (!userConfirmed) return;
         
-        if (this.currentMode === 'track') {
-            // Clear track mode data
+        if (this.currentMode === 'writing') {
             this.richTextInput.innerHTML = '';
-            this.processedSentences = [];
-            this.lastProcessedLength = 0;
-        } else if (this.currentMode === 'input') {
-            this.textInput.value = '';
-        } else {
-            // Reset to input mode (legacy)
-            this.currentMode = 'input';
-            this.selectedWords = [];
+            this.richTextInput.contentEditable = 'true';
+            this.richTextInput.style.cursor = 'text';
+            this.processedText = [];
             this.originalText = '';
-            this.textInput.style.display = 'block';
-            this.textDisplay.style.display = 'none';
+            this.evaluateFullBtn.disabled = false;
+            this.evaluateFullBtn.textContent = 'Assess';
+            this.nextBtn.disabled = true;
+        } else {
             this.textInput.value = '';
-            this.nextBtn.textContent = 'Next';
         }
         
         this.updateNextButtonState();
         this.showMessage('Cleared!', 'info');
     }
 
-    async handleNext() {
-        await this.handleNext();
-    }
+    async getVocabularyFromCorrection(userText, correctedText) {
+        const prompt = `You are a Swedish language tutor.  
+The user provides a Swedish text they wrote (which may contain errors) and a corrected version of that text.
 
-    resetWorkspace() {
-        this.textInput.value = '';
-        this.updateNextButtonState();
-        // Clear any pending data
-        this.paragraphData = null;
+Your task:
+1. Provide an English translation of the corrected text.
+2. Identify only the words or phrases that differ between the user text and the corrected text.
+3. For each, provide:
+   - \`word\`: the correct Swedish word or phrase
+   - \`meaning\`: its English translation or short definition
+
+Return your answer strictly in JSON format with the structure:
+{
+  "translation": "English translation of the corrected text",
+  "vocabulary": [
+    { "word": "correct word or phrase", "meaning": "English meaning" },
+    ...
+  ]
+}
+
+User text: "${userText}"
+Correct text: "${correctedText}"
+
+Return ONLY the JSON, no other text.`;
+
+        const response = await this.geminiAI.generateContent(prompt);
+        const content = response.candidates[0].content.parts[0].text;
+        
+        // Extract JSON from response
+        let parsedResponse;
+        try {
+            parsedResponse = JSON.parse(content);
+        } catch (parseError) {
+            const jsonMatch = content.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                parsedResponse = JSON.parse(jsonMatch[0]);
+            } else {
+                throw new Error('Failed to parse JSON response from Gemini');
+            }
+        }
+        
+        return parsedResponse;
     }
 
     async getParagraphAnalysis(paragraph) {
@@ -807,46 +875,100 @@ Example Output JSON format:
     }
 
     async handleNext() {
-        const text = this.textInput.value.trim();
-
-        if (!text) {
-            this.showMessage('Please enter some text first!', 'error');
-            return;
-        }
-
-        // Show loading state
-        this.nextBtn.classList.add('loading');
-        this.nextBtn.disabled = true;
-        this.nextBtn.textContent = 'loading';
-
-        try {
-            // Get translation from Gemini AI
-            const aiResponse = await this.getParagraphAnalysis(text);
-            console.log('Gemini AI response:', aiResponse);
+        // Check which mode we're in
+        if (this.currentMode === 'writing') {
+            // Writing mode: process corrected text
+            if (!this.processedText || this.processedText.length === 0) {
+                this.showMessage('Please evaluate the text first!', 'error');
+                return;
+            }
             
-            const paragraphData = {
-                paragraph: aiResponse.corrected_paragraph,
-                translated_paragraph: aiResponse.translated_paragraph,
-                expressions: aiResponse.expressions
-            };
+            const userText = this.processedText[0].original;
+            const correctedText = this.processedText[0].corrected;
+            
+            // Show loading state
+            this.nextBtn.classList.add('loading');
+            this.nextBtn.disabled = true;
+            this.nextBtn.textContent = 'Loading...';
+            
+            try {
+                // Get vocabulary from correction
+                const aiResponse = await this.getVocabularyFromCorrection(userText, correctedText);
+                console.log('Vocabulary response:', aiResponse);
+                
+                // Convert to the format expected by overview modal
+                const expressions = aiResponse.vocabulary.map(item => ({
+                    expression: item.word,
+                    translation: item.meaning
+                }));
+                
+                const paragraphData = {
+                    paragraph: correctedText,
+                    translated_paragraph: aiResponse.translation,
+                    expressions: expressions
+                };
+                
+                // Store data for later saving
+                this.paragraphData = paragraphData;
+                
+                this.showMessage(`Found ${expressions.length} vocabulary items to learn!`, 'success');
+                
+                // Show overview modal
+                this.showOverviewModal(paragraphData);
+                
+            } catch (error) {
+                console.error('Error processing correction:', error);
+                this.showMessage('Error: ' + error.message, 'error');
+            } finally {
+                // Remove loading state
+                this.nextBtn.classList.remove('loading');
+                this.nextBtn.disabled = false;
+                this.nextBtn.textContent = 'Next';
+            }
+            
+        } else {
+            // Reading mode: original behavior
+            const text = this.textInput.value.trim();
 
-            // Store data for later saving
-            this.paragraphData = paragraphData;
+            if (!text) {
+                this.showMessage('Please enter some text first!', 'error');
+                return;
+            }
 
-            this.showMessage(`Translation complete! Found ${paragraphData.expressions.length} expressions. Review and save below.`, 'success');
+            // Show loading state
+            this.nextBtn.classList.add('loading');
+            this.nextBtn.disabled = true;
+            this.nextBtn.textContent = 'loading';
 
-            // Show overview modal without saving to database yet
-            this.showOverviewModal(paragraphData);
+            try {
+                // Get translation from Gemini AI
+                const aiResponse = await this.getParagraphAnalysis(text);
+                console.log('Gemini AI response:', aiResponse);
+                
+                const paragraphData = {
+                    paragraph: aiResponse.corrected_paragraph,
+                    translated_paragraph: aiResponse.translated_paragraph,
+                    expressions: aiResponse.expressions
+                };
 
-            this.nextBtn.textContent = 'Next';
+                // Store data for later saving
+                this.paragraphData = paragraphData;
 
-        } catch (error) {
-            console.error('Error processing paragraph:', error);
-            this.showMessage('Error: ' + error.message, 'error');
-        } finally {
-            // Remove loading state
-            this.nextBtn.classList.remove('loading');
-            this.nextBtn.disabled = false;
+                this.showMessage(`Translation complete! Found ${paragraphData.expressions.length} expressions. Review and save below.`, 'success');
+
+                // Show overview modal without saving to database yet
+                this.showOverviewModal(paragraphData);
+
+                this.nextBtn.textContent = 'Next';
+
+            } catch (error) {
+                console.error('Error processing paragraph:', error);
+                this.showMessage('Error: ' + error.message, 'error');
+            } finally {
+                // Remove loading state
+                this.nextBtn.classList.remove('loading');
+                this.nextBtn.disabled = false;
+            }
         }
     }
 }

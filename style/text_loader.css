@@ -64,12 +64,12 @@
     font-style: italic;
 }
 
-/* Track mode: show rich text editor, hide textarea */
-.track-mode .text-input {
+/* Writing mode: show rich text editor, hide textarea */
+.writing-mode .text-input {
     display: none;
 }
 
-.track-mode .rich-text-input {
+.writing-mode .rich-text-input {
     display: block;
 }
 
@@ -105,12 +105,12 @@
     50% { opacity: 0.5; }
 }
 
-/* Track mode specific buttons */
-.track-mode-only {
+/* Writing mode specific buttons */
+.writing-mode-only {
     display: none;
 }
 
-.track-mode .track-mode-only {
+.writing-mode .writing-mode-only {
     display: inline-block;
 }
 

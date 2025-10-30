@@ -11,13 +11,13 @@
     <div class="container">
         <!-- Mode Toggle -->
         <div class="mode-toggle-container">
-            <button id="normalModeBtn" class="mode-btn active">Normal Mode</button>
-            <button id="trackModeBtn" class="mode-btn">Track Mode</button>
+            <button id="normalModeBtn" class="mode-btn active">Reading Mode</button>
+            <button id="trackModeBtn" class="mode-btn">Writing Mode</button>
         </div>
 
         <div class="content-area">
             <textarea id="textInput" class="text-input" placeholder="Enter your paragraph here..."></textarea>
-            <div id="richTextInput" class="rich-text-input" contenteditable="true" data-placeholder="Type or paste your text. Each sentence will be evaluated automatically..."></div>
+            <div id="richTextInput" class="rich-text-input" contenteditable="true" data-placeholder="Type or paste your text..."></div>
             <div id="textDisplay" class="text-display"></div>
             <div id="statusMessage" class="status-message"></div>
         </div>
@@ -25,7 +25,7 @@
         <div class="button-container">
             <button id="clearBtn" class="btn-secondary" title="Clear">Clear</button>
             <button id="workspaceBtn" class="btn-secondary" title="Shelf">Shelf</button>
-            <button id="evaluateFullBtn" class="btn-secondary track-mode-only" title="Evaluate Full Text" style="display: none;">Evaluate Full</button>
+            <button id="evaluateFullBtn" class="btn-secondary writing-mode-only" title="Assess Text" style="display: none;">Assess</button>
             <button id="nextBtn" class="btn-primary" title="Next">Next</button>
         </div>
     </div>
