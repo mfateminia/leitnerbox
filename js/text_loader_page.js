@@ -761,15 +761,29 @@ Your task:
 1. Provide an English translation of the corrected text.
 2. Identify only the words or phrases that differ between the user text and the corrected text.
 3. For each, provide:
-   - \`word\`: the correct Swedish word or phrase
-   - \`meaning\`: its English translation or short definition
+   - \`word\`: the LEMMA (base form) of the correct Swedish word or phrase
+     * If it's a noun: use singular form (e.g., "hus" not "husen")
+     * If it's a verb: use infinitive form (e.g., "vara" not "var")
+     * If it's an adjective: use base form (e.g., "vacker" not "vackert")
+   - \`meaning\`: ONLY the English translation of the lemma form, no explanations or context
 
 Return your answer strictly in JSON format with the structure:
 {
   "translation": "English translation of the corrected text",
   "vocabulary": [
-    { "word": "correct word or phrase", "meaning": "English meaning" },
+    { "word": "lemma form", "meaning": "translation only" },
     ...
+  ]
+}
+
+Example:
+User text: "jag såg många husen igår"
+Correct text: "jag såg många hus igår"
+Output: {
+  "translation": "I saw many houses yesterday",
+  "vocabulary": [
+    { "word": "hus", "meaning": "house" },
+    { "word": "se", "meaning": "to see" }
   ]
 }
 
