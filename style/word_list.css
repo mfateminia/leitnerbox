@@ -81,7 +81,7 @@
 }
 
 .word-text {
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--color-text);
     margin-bottom: 4px;
@@ -94,7 +94,7 @@
 }
 
 .word-translation {
-    font-size: 14px;
+    font-size: 16px;
     color: var(--color-secondary);
     line-height: 1.3;
     transition: opacity 0.3s ease;
@@ -111,22 +111,16 @@
     font-weight: 500;
 }
 
-.word-meta {
-    font-size: 11px;
-    color: var(--color-text);
-    opacity: 0.6;
-    margin-top: 4px;
-}
-
 .word-actions {
     display: flex;
+    flex-direction: column;
     gap: 8px;
     flex-shrink: 0;
 }
 
 .action-btn {
     width: 32px;
-    height: 32px;
+    min-height: 32px;
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -140,7 +134,7 @@
 }
 
 .edit-btn {
-    background: var(--color-primary);
+    background: var(--color-surface);
     color: var(--color-white);
 }
 
@@ -150,7 +144,7 @@
 }
 
 .delete-btn {
-    background: var(--color-accent);
+    background: var(--color-surface);
     color: var(--color-white);
 }
 
@@ -306,25 +300,11 @@
     }
     
     .word-item {
-        padding: 10px 12px;
+        padding: 6px 8px;
     }
-    
-    .word-text {
-        font-size: 15px;
-    }
-    
-    .word-translation {
-        font-size: 13px;
-    }
-    
+
     .word-actions {
         gap: 6px;
-    }
-    
-    .action-btn {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
     }
 }
 
@@ -333,30 +313,11 @@
         padding: 12px;
     }
     
-    .word-item {
-        padding: 8px 10px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-    }
-    
-    .word-content {
-        text-align: center;
-    }
-    
     .word-actions {
         justify-content: center;
         margin-top: 5px;
         align-self: center;
         width: auto;
-    }
-    
-    .word-text {
-        font-size: 14px;
-    }
-    
-    .word-translation {
-        font-size: 12px;
     }
     
     .modal-body {

@@ -185,7 +185,6 @@ class WordListPage {
             <div class="word-content">
                 <div class="word-text" onclick="wordListPage.toggleWordTranslation(${word.id})">${word.word}</div>
                 <div class="word-translation ${this.hiddenTranslations ? 'hidden' : ''}">${word.translation}</div>
-                <div class="word-meta">Added: ${createdDate} | Reviews: ${reviewCount}</div>
             </div>
             <div class="word-actions">
                 <button class="action-btn edit-btn" onclick="wordListPage.editWord(${word.id})" title="Edit word">
