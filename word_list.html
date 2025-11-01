@@ -64,6 +64,15 @@
                     <label for="editWordTranslation">Translation:</label>
                     <input type="text" id="editWordTranslation" placeholder="Enter translation">
                 </div>
+                <div class="input-group" id="rootInputGroup">
+                    <label for="editWordRoot">Root:</label>
+                    <div id="editWordRoot" class="word-root"></div>
+                    <button class="btn btn-secondary" id="getRootBtn" style="margin-top: 8px; display: none;">Get Root</button>
+                </div>
+                <div class="paragraph-source">
+                    <label>Source Paragraph:</label>
+                    <div class="paragraph-text" id="sourceParagraph">Loading...</div>
+                </div>
             </div>
             <div class="modal-buttons">
                 <button class="btn btn-secondary" id="cancelEdit">Cancel</button>
@@ -97,6 +106,8 @@
     <script src="js/hamburger_menu.js"></script>
     <script src="js/indexdb.js"></script>
     <script src="js/word_db.js"></script>
+    <script src="js/paragraphs_db.js"></script>
+    <script src="js/gemini.js"></script>
     <script src="js/word_list_page.js"></script>
 </body>
 </html>

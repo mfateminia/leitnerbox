@@ -2,6 +2,8 @@
 class WordListPage {
     constructor() {
         this.wordDB = new WordDB();
+        this.paragraphsDB = new ParagraphsDB();
+        this.geminiAI = null;
         this.words = [];
         this.hiddenTranslations = false;
         this.revealedWords = new Set();
@@ -16,6 +18,21 @@ class WordListPage {
         
         try {
             await this.wordDB.init();
+            await this.paragraphsDB.init();
+            
+            // Initialize Gemini AI with API key from settings (if available)
+            try {
+                const apiKey = localStorage.getItem('gemini_api_key');
+                if (apiKey) {
+                    this.geminiAI = new GeminiAI(apiKey);
+                    console.log('Gemini AI initialized successfully');
+                } else {
+                    console.log('No Gemini API key found in localStorage');
+                }
+            } catch (error) {
+                console.log('Gemini AI not available:', error.message);
+            }
+            
             this.setupEventListeners();
             await this.loadWords();
             console.log('WordListPage: Initialization completed successfully');
@@ -47,6 +64,7 @@ class WordListPage {
         const closeEditModal = document.getElementById('closeEditModal');
         const cancelEdit = document.getElementById('cancelEdit');
         const saveEdit = document.getElementById('saveEdit');
+        const getRootBtn = document.getElementById('getRootBtn');
 
         if (closeEditModal) {
             closeEditModal.addEventListener('click', () => this.closeEditModal());
@@ -58,6 +76,10 @@ class WordListPage {
 
         if (saveEdit) {
             saveEdit.addEventListener('click', () => this.saveWordEdit());
+        }
+
+        if (getRootBtn) {
+            getRootBtn.addEventListener('click', () => this.getWordRoot());
         }
 
         if (editModal) {
@@ -239,23 +261,125 @@ class WordListPage {
         }
     }
 
-    editWord(wordId) {
+    async editWord(wordId) {
         const word = this.words.find(w => w.id === wordId);
         if (!word) return;
 
         this.currentEditWordId = wordId;
 
-        // Populate edit form
-        const editWordText = document.getElementById('editWordText');
-        const editWordTranslation = document.getElementById('editWordTranslation');
-
-        if (editWordText) editWordText.value = word.word;
-        if (editWordTranslation) editWordTranslation.value = word.translation;
-
-        // Show edit modal
+        // Show edit modal first
         const editModal = document.getElementById('editModal');
         if (editModal) {
             editModal.style.display = 'block';
+        }
+
+        // Wait a tiny bit for the modal to be rendered
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        // Populate edit form
+        const editWordText = document.getElementById('editWordText');
+        const editWordTranslation = document.getElementById('editWordTranslation');
+        const editWordRoot = document.getElementById('editWordRoot');
+        const getRootBtn = document.getElementById('getRootBtn');
+        const rootInputGroup = document.getElementById('rootInputGroup');
+        const sourceParagraph = document.getElementById('sourceParagraph');
+        
+        console.log('Elements found:', {
+            editWordText: !!editWordText,
+            editWordTranslation: !!editWordTranslation,
+            editWordRoot: !!editWordRoot,
+            getRootBtn: !!getRootBtn,
+            rootInputGroup: !!rootInputGroup,
+            sourceParagraph: !!sourceParagraph
+        });
+        
+        if (editWordText) editWordText.value = word.word;
+        if (editWordTranslation) editWordTranslation.value = word.translation;
+        if (editWordRoot) editWordRoot.innerText = word.root || '';
+
+        // Show/hide root section based on whether root exists
+        if (rootInputGroup && getRootBtn) {
+            if (word.root && word.root.trim()) {
+                console.log('root exists');
+                // Show the textarea, hide the button
+                editWordRoot.style.display = 'block';
+                getRootBtn.style.display = 'none';
+            } else {
+                console.log('root does not exist');
+                console.log('geminiAI available:', !!this.geminiAI);
+                // Hide the textarea, show the button if AI is available
+                editWordRoot.style.display = 'none';
+                getRootBtn.style.display = this.geminiAI ? 'block' : 'none';
+                getRootBtn.disabled = false; // Ensure button is enabled when shown
+                getRootBtn.textContent = 'Get Root'; // Reset button text
+            }
+        }
+
+        // Load and display source paragraph
+        if (sourceParagraph) {
+            sourceParagraph.textContent = 'Loading paragraph...';
+            try {
+                const paragraph = await this.paragraphsDB.getParagraph(word.paragraph_id);
+                if (paragraph) {
+                    sourceParagraph.textContent = paragraph.paragraph;
+                } else {
+                    sourceParagraph.textContent = 'Source paragraph not found';
+                }
+            } catch (error) {
+                console.error('Error loading paragraph:', error);
+                sourceParagraph.textContent = 'Error loading paragraph';
+            }
+        }
+    }
+
+    async getWordRoot() {
+        if (!this.geminiAI) {
+            this.showMessage('Gemini AI not available. Please configure API key in settings.', 'error');
+            return;
+        }
+
+        const editWordText = document.getElementById('editWordText');
+        const editWordRoot = document.getElementById('editWordRoot');
+        const getRootBtn = document.getElementById('getRootBtn');
+
+        if (!editWordText || !editWordRoot || !getRootBtn) return;
+
+        const word = editWordText.value.trim();
+        if (!word) {
+            this.showMessage('Please enter a word first', 'error');
+            return;
+        }
+
+        try {
+            // Disable button and show loading state
+            getRootBtn.disabled = true;
+            getRootBtn.textContent = 'Getting Root...';
+
+            // Create prompt for Gemini AI
+            const prompt = `Analyze the Swedish word "${word}" and provide its root in English. 
+            Please provide a concise explanation (1-2 sentences) of the word's root, origin, and meaning. 
+            If it's a compound word, explain the parts.
+            Do not include any markdown formatting or special characters in your response.`;
+
+            const response = await this.geminiAI.generateContent(prompt);
+            const rootExplanation = response.candidates[0].content.parts[0].text.trim();
+
+            // Set the root in the input field
+            editWordRoot.innerText = rootExplanation;
+
+            // Show the textarea and hide the Get Root button since we now have a root
+            editWordRoot.style.display = 'block';
+            getRootBtn.style.display = 'none';
+
+            this.showMessage('Root explanation generated successfully!', 'success');
+
+        } catch (error) {
+            console.error('Error getting word root:', error);
+            this.showMessage('Error getting word root: ' + error.message, 'error');
+        } finally {
+            // Re-enable button and restore text
+            getRootBtn.disabled = false;
+            getRootBtn.textContent = 'Get Root';
         }
     }
 
@@ -264,11 +388,13 @@ class WordListPage {
 
         const editWordText = document.getElementById('editWordText');
         const editWordTranslation = document.getElementById('editWordTranslation');
+        const editWordRoot = document.getElementById('editWordRoot');
 
         if (!editWordText || !editWordTranslation) return;
 
         const newWord = editWordText.value.trim();
         const newTranslation = editWordTranslation.value.trim();
+        const newRoot = editWordRoot ? editWordRoot.value.trim() : '';
 
         if (!newWord || !newTranslation) {
             this.showMessage('Both word and translation are required', 'error');
@@ -286,6 +412,9 @@ class WordListPage {
             // Update word
             currentWord.word = newWord;
             currentWord.translation = newTranslation;
+            if (newRoot) {
+                currentWord.root = newRoot;
+            }
 
             await this.wordDB.updateWord(this.currentEditWordId, currentWord);
 
@@ -372,9 +501,23 @@ class WordListPage {
 
     closeEditModal() {
         const editModal = document.getElementById('editModal');
+        const getRootBtn = document.getElementById('getRootBtn');
+        const editWordRoot = document.getElementById('editWordRoot');
+        
         if (editModal) {
             editModal.style.display = 'none';
         }
+        
+        // Reset button and textarea state for next time
+        if (getRootBtn) {
+            getRootBtn.disabled = false;
+            getRootBtn.textContent = 'Get Root';
+        }
+        
+        if (editWordRoot) {
+            editWordRoot.style.display = 'block'; // Reset to visible for next word
+        }
+        
         this.currentEditWordId = null;
     }
 
