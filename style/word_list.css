@@ -1,0 +1,389 @@
+/* Word List Page Specific Styles */
+
+.controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    background: var(--color-surface);
+    border-radius: 8px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.hide-translations-checkbox {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+.checkbox-container label {
+    font-weight: 500;
+    color: var(--color-text);
+    cursor: pointer;
+    user-select: none;
+}
+
+.load-info {
+    font-size: 12px;
+    color: var(--color-secondary);
+    opacity: 0.8;
+}
+
+.word-list-container {
+    flex: 1;
+    background: var(--color-surface);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    min-height: 0;
+}
+
+.word-list {
+    height: 100%;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.word-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 8px;
+    background: var(--color-white);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    border-left: 4px solid var(--color-primary);
+}
+
+.word-item:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.word-item:last-child {
+    margin-bottom: 0;
+}
+
+.word-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.word-text {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: 4px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.word-text:hover {
+    color: var(--color-primary);
+}
+
+.word-translation {
+    font-size: 14px;
+    color: var(--color-secondary);
+    line-height: 1.3;
+    transition: opacity 0.3s ease;
+}
+
+.word-translation.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.word-translation.revealed {
+    animation: fadeIn 0.3s ease;
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.word-meta {
+    font-size: 11px;
+    color: var(--color-text);
+    opacity: 0.6;
+    margin-top: 4px;
+}
+
+.word-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    padding: 0;
+    margin: 0;
+}
+
+.edit-btn {
+    background: var(--color-primary);
+    color: var(--color-white);
+}
+
+.edit-btn:hover {
+    background: var(--color-primary-hover);
+    transform: scale(1.1);
+}
+
+.delete-btn {
+    background: var(--color-accent);
+    color: var(--color-white);
+}
+
+.delete-btn:hover {
+    background: var(--color-accent-hover);
+    transform: scale(1.1);
+}
+
+/* Modal Styles for Word List */
+.modal-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.input-group {
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--color-white);
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    background: var(--color-white);
+    box-shadow: 0 0 0 3px rgba(69, 135, 188, 0.3);
+}
+
+.word-preview {
+    background: var(--color-white-overlay);
+    padding: 15px;
+    border-radius: 6px;
+    margin: 15px 0;
+    text-align: center;
+}
+
+.word-preview strong {
+    display: block;
+    font-size: 18px;
+    color: var(--color-white);
+    margin-bottom: 5px;
+}
+
+.word-preview span {
+    font-size: 14px;
+    color: var(--color-white);
+    opacity: 0.8;
+}
+
+.warning-text {
+    color: var(--color-accent);
+    font-weight: 500;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Status indicators */
+.word-item.mastered {
+    border-left-color: var(--color-success-text);
+}
+
+.word-item.mastered .word-text::after {
+    content: " ✓";
+    color: var(--color-success-text);
+    font-weight: bold;
+}
+
+.word-item.new {
+    border-left-color: var(--color-accent);
+}
+
+.word-item.new .word-text::after {
+    content: " •";
+    color: var(--color-accent);
+    font-weight: bold;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.word-item.removing {
+    animation: slideOut 0.3s ease forwards;
+}
+
+@keyframes slideOut {
+    to {
+        transform: translateX(-100%);
+        opacity: 0;
+        height: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+}
+
+/* Empty state */
+.no-words-message {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    text-align: center;
+}
+
+.no-words-message .completion-message {
+    color: var(--color-white);
+}
+
+.no-words-message .completion-message p {
+    font-size: 14px;
+    opacity: 0.8;
+    margin-top: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .controls {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .checkbox-container {
+        justify-content: center;
+    }
+    
+    .load-info {
+        text-align: center;
+    }
+    
+    .word-item {
+        padding: 10px 12px;
+    }
+    
+    .word-text {
+        font-size: 15px;
+    }
+    
+    .word-translation {
+        font-size: 13px;
+    }
+    
+    .word-actions {
+        gap: 6px;
+    }
+    
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .controls {
+        padding: 12px;
+    }
+    
+    .word-item {
+        padding: 8px 10px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .word-content {
+        text-align: center;
+    }
+    
+    .word-actions {
+        justify-content: center;
+        margin-top: 5px;
+        align-self: center;
+        width: auto;
+    }
+    
+    .word-text {
+        font-size: 14px;
+    }
+    
+    .word-translation {
+        font-size: 12px;
+    }
+    
+    .modal-body {
+        padding: 15px;
+    }
+    
+    .input-group input {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* Scrollbar styling for word list */
+.word-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.word-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 3px;
+}
+
+.word-list::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 3px;
+}
+
+.word-list::-webkit-scrollbar-thumb:hover {
+    background: var(--color-primary-hover);
+}

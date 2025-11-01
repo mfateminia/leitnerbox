@@ -41,6 +41,7 @@ class HamburgerMenu {
                         <li><a href="text_loader.html" data-page="text_loader"><span class="icon">📝</span>Text Loader</a></li>
                         <li><a href="paragraph_review.html" data-page="paragraph_review"><span class="icon">📖</span>Paragraph Review</a></li>
                         <li><a href="word_review.html" data-page="word_review"><span class="icon">🔍</span>Word Review</a></li>
+                        <li><a href="word_list.html" data-page="word_list"><span class="icon">📚</span>Word List</a></li>
                         <li><a href="settings.html" data-page="settings"><span class="icon">⚙️</span>Settings</a></li>
                     </ul>
                 </nav>
@@ -215,6 +216,7 @@ class HamburgerMenu {
             'text_loader.html': 'text_loader',
             'paragraph_review.html': 'paragraph_review',
             'word_review.html': 'word_review',
+            'word_list.html': 'word_list',
             'settings.html': 'settings'
         };
         
